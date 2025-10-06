@@ -1,0 +1,55 @@
+SERVICE LEVEL AGREEMENT
+
+Between:
+Client A (Customer)
+And:
+Vendor X (Service Provider)
+
+Contract Period: January 1, 2024 to December 31, 2024
+
+SERVICE LEVEL OBLIGATIONS:
+
+1. AVAILABILITY REQUIREMENTS
+   - Service availability must be maintained at 99.5% or higher
+   - Monthly SLA report due by 30th of each month
+   - Penalty: ₹50,000 for each percentage point below 99.5%
+
+2. RESPONSE TIME OBLIGATIONS
+   - Critical issues: Response within 2 hours
+   - High priority issues: Response within 8 hours
+   - Medium priority issues: Response within 24 hours
+   - Low priority issues: Response within 72 hours
+
+3. PERFORMANCE METRICS
+   - System response time: Maximum 2 seconds
+   - Database query performance: Maximum 500ms
+   - Monthly performance report due by 15th of each month
+
+4. FINANCIAL TERMS
+   - Service fee: ₹2,00,000 per month
+   - Payment due within 30 days of invoice
+   - Late payment penalty: 2% per month
+   - Volume discount: 5% if transaction volume exceeds 1,000,000 per quarter
+   - Discount cap: Maximum 10% discount per transaction
+
+5. COMPLIANCE OBLIGATIONS
+   - GDPR compliance certification due annually by March 31st
+   - Security audit report due quarterly by last day of quarter
+   - Data backup verification report due weekly every Friday
+
+6. REBATE CONDITIONS
+   - Rebate of ₹25,000 if service availability falls below 99%
+   - Rebate of ₹10,000 for each missed SLA report deadline
+   - Volume rebate: ₹1 per transaction if volume exceeds 2,000,000 per quarter
+
+7. TERMINATION CONDITIONS
+   - Either party may terminate with 90 days notice
+   - Immediate termination if service availability falls below 95% for 3 consecutive months
+   - Termination penalty: ₹5,00,000 if terminated without cause
+
+8. REPORTING REQUIREMENTS
+   - Monthly SLA dashboard due by 5th of each month
+   - Quarterly business review report due by 15th of quarter-end month
+   - Annual compliance report due by January 31st of following year
+
+This agreement is binding and enforceable under Indian law.
