@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@mui/x-data-grid": "^8.13.1",
+    "axios": "^1.12.2"
+  }
+}
