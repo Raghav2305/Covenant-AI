@@ -67,6 +67,11 @@ class Settings(BaseSettings):
     SLACK_WEBHOOK_URL: Optional[str] = None
     EMAIL_SERVICE_API_KEY: Optional[str] = None
     TEAMS_WEBHOOK_URL: Optional[str] = None
+
+    # Backup & Recovery
+    BACKUP_SCHEDULE: Optional[str] = None
+    BACKUP_RETENTION_DAYS: Optional[int] = None
+    BACKUP_STORAGE_URL: Optional[str] = None
     
     class Config:
         env_file = ".env"

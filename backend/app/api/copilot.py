@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from app.core.simple_database import get_db
+from app.core.database import get_db
 from app.models.contract import Contract
 from app.models.obligation import Obligation
 from app.utils.llm_client import LLMClient

@@ -18,7 +18,7 @@ const columns: GridColDef[] = [
     field: 'created_at',
     headerName: 'Upload Date',
     width: 180,
-    valueFormatter: (params) => 
+    renderCell: (params) => 
       params.value ? new Date(params.value).toLocaleString() : 'N/A',
   },
 ];

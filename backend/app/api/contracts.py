@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from app.core.simple_database import get_db
+from app.core.database import get_db
 from app.models.contract import Contract
 from app.models.obligation import Obligation
 from app.services.contract_processor import ContractProcessor
@@ -39,21 +39,22 @@ async def upload_contract(
                party_b=party_b)
     
     try:
-        # Validate file
-        ocr_processor = OCRProcessor()
-        if not ocr_processor.validate_file(file.filename):
-            raise HTTPException(status_code=400, detail="Invalid file type or size")
-        
-        # Save uploaded file
+        # Save uploaded file to a temporary path
         import os
         upload_dir = "data/uploads"
         os.makedirs(upload_dir, exist_ok=True)
         
+        # Use a unique filename to avoid conflicts
         file_path = os.path.join(upload_dir, f"{uuid.uuid4()}_{file.filename}")
         
         with open(file_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
+
+        # Validate the saved file
+        ocr_processor = OCRProcessor()
+        if not ocr_processor.validate_file(file_path):
+            raise HTTPException(status_code=400, detail="Invalid file type or size")
         
         # Prepare contract data
         contract_data = {
@@ -82,8 +83,8 @@ async def upload_contract(
         }
         
     except Exception as e:
-        logger.error("Contract upload failed", error=str(e))
-        raise HTTPException(status_code=500, detail=f"Contract processing failed: {str(e)}")
+        logger.error("Contract upload failed", error=repr(e), exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Contract processing failed: {repr(e)}")
 
 
 @router.get("/")

@@ -3,7 +3,7 @@ Obligation database model
 """
 
 from sqlalchemy import Column, String, DateTime, Text, Integer, Boolean, ForeignKey, Numeric
-# from sqlalchemy.dialects.postgresql import UUID, JSONB  # Not needed for SQLite
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -14,8 +14,8 @@ class Obligation(Base):
     """Obligation model"""
     __tablename__ = "obligations"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    contract_id = Column(String, ForeignKey("contracts.id"), nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    contract_id = Column(UUID(as_uuid=True), ForeignKey("contracts.id"), nullable=False)
     obligation_id = Column(String(100), unique=True, nullable=False)
     
     # Obligation details

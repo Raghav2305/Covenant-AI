@@ -14,6 +14,9 @@ from app.api import contracts, obligations, monitoring, reports, copilot
 from app.core.mcp_client import MCPClientManager
 
 # Configure structured logging
+# Use ConsoleRenderer for development if DEBUG is True
+renderer = structlog.dev.ConsoleRenderer() if settings.DEBUG else structlog.processors.JSONRenderer()
+
 structlog.configure(
     processors=[
         structlog.stdlib.filter_by_level,
@@ -24,7 +27,7 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        structlog.processors.JSONRenderer()
+        renderer
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),

@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api'; // Assuming the backend runs on port 8000
+const API_URL = 'http://localhost:8000/api/v1'; // Assuming the backend runs on port 8000
 
 // Define the structure of a Contract object based on the API
 export type Contract = {

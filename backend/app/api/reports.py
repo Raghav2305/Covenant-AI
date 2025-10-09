@@ -9,7 +9,7 @@ from sqlalchemy import desc, and_, or_
 from datetime import datetime, timedelta
 import json
 
-from app.core.simple_database import get_db
+from app.core.database import get_db
 from app.models.contract import Contract
 from app.models.obligation import Obligation
 from app.models.alert import Alert

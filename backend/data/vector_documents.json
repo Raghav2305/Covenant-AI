@@ -1,0 +1,218 @@
+{
+  "cd103ff3-b949-497d-86af-fc4f04d225d6": {
+    "content": "SERVICE LEVEL AGREEMENT\n\nBetween:\nClient A (Customer)\nAnd:\nVendor X (Service Provider)\n\nContract Period: January 1, 2024 to December 31, 2024\n\nSERVICE LEVEL OBLIGATIONS:\n\n1. AVAILABILITY REQUIREMENTS\n   - Service availability must be maintained at 99.5% or higher\n   - Monthly SLA report due by 30th of each month\n   - Penalty: ₹50,000 for each percentage point below 99.5%\n\n2. RESPONSE TIME OBLIGATIONS\n   - Critical issues: Response within 2 hours\n   - High priority issues: Response within 8 hours\n   - Medium priority issues: Response within 24 hours\n   - Low priority issues: Response within 72 hours\n\n3. PERFORMANCE METRICS\n   - System response time: Maximum 2 seconds\n   - Database query performance: Maximum 500ms\n   - Monthly performance report due by 15th of each month\n\n4. FINANCIAL TERMS\n   - Service fee: ₹2,00,000 per month\n   - Payment due within 30 days of invoice\n   - Late payment penalty: 2% per month\n   - Volume discount: 5% if transaction volume exceeds 1,000,000 per quarter\n   - Discount cap: Maximum 10% discount per transaction\n\n5. COMPLIANCE OBLIGATIONS\n   - GDPR compliance certification due annually by March 31st\n   - Security audit report due quarterly by last day of quarter\n   - Data backup verification report due weekly every Friday\n\n6. REBATE CONDITIONS\n   - Rebate of ₹25,000 if service availability falls below 99%\n   - Rebate of ₹10,000 for each missed SLA report deadline\n   - Volume rebate: ₹1 per transaction if volume exceeds 2,000,000 per quarter\n\n7. TERMINATION CONDITIONS\n   - Either party may terminate with 90 days notice\n   - Immediate termination if service availability falls below 95% for 3 consecutive months\n   - Termination penalty: ₹5,00,000 if terminated without cause\n\n8. REPORTING REQUIREMENTS\n   - Monthly SLA dashboard due by 5th of each month\n   - Quarterly business review report due by 15th of quarter-end month\n   - Annual compliance report due by January 31st of following year\n\nThis agreement is binding and enforceable under Indian law.",
+    "metadata": {
+      "type": "contract",
+      "title": "Demo",
+      "party_a": "Raghav",
+      "party_b": "Client",
+      "contract_type": null
+    },
+    "keywords": [
+      "month",
+      "2024",
+      "within",
+      "maintained",
+      "immediate",
+      "compliance",
+      "critical",
+      "annually",
+      "each",
+      "₹2,00,000",
+      "march",
+      "this",
+      "time",
+      "99.5%",
+      "fee:",
+      "obligations:",
+      "notice",
+      "december",
+      "dashboard",
+      "quarter"
+    ],
+    "doc_id": "cd103ff3-b949-497d-86af-fc4f04d225d6"
+  },
+  "ba149303-e617-46ec-91b0-d4d419312c78": {
+    "content": "Service availability must be maintained at 99.5% or higher For each percentage point below 99.5%",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-001",
+      "party": "Vendor X",
+      "obligation_type": "SLA",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "service",
+      "each",
+      "below",
+      "maintained",
+      "higher",
+      "availability",
+      "must",
+      "percentage",
+      "point",
+      "99.5%"
+    ],
+    "doc_id": "ba149303-e617-46ec-91b0-d4d419312c78"
+  },
+  "ebc54664-941a-48fd-99d0-a63c1646f01e": {
+    "content": "Monthly SLA report Missed SLA report deadline",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-002",
+      "party": "Vendor X",
+      "obligation_type": "Report Submission",
+      "deadline": null,
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "missed",
+      "monthly",
+      "deadline",
+      "report"
+    ],
+    "doc_id": "ebc54664-941a-48fd-99d0-a63c1646f01e"
+  },
+  "ac0070a5-26ef-4ce6-a49f-5c8780be34e3": {
+    "content": "Response time for critical issues Within 2 hours",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-003",
+      "party": "Vendor X",
+      "obligation_type": "SLA",
+      "deadline": null,
+      "risk_level": "critical"
+    },
+    "keywords": [
+      "within",
+      "response",
+      "hours",
+      "time",
+      "critical",
+      "issues"
+    ],
+    "doc_id": "ac0070a5-26ef-4ce6-a49f-5c8780be34e3"
+  },
+  "02df5dda-52e3-4cf4-b8da-c0b302571d19": {
+    "content": "Service fee Late payment penalty: 2% per month",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-004",
+      "party": "Vendor X",
+      "obligation_type": "Payment",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "service",
+      "month",
+      "payment",
+      "late",
+      "penalty:"
+    ],
+    "doc_id": "02df5dda-52e3-4cf4-b8da-c0b302571d19"
+  },
+  "67b15842-7a43-4057-ace5-ae8bc3b8062b": {
+    "content": "Volume discount 5% if transaction volume exceeds 1,000,000 per quarter",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-005",
+      "party": "Vendor X",
+      "obligation_type": "Discount",
+      "deadline": null,
+      "risk_level": "low"
+    },
+    "keywords": [
+      "exceeds",
+      "discount",
+      "1,000,000",
+      "quarter",
+      "transaction",
+      "volume"
+    ],
+    "doc_id": "67b15842-7a43-4057-ace5-ae8bc3b8062b"
+  },
+  "a08e1bce-c6da-430b-92a2-5729017704d2": {
+    "content": "GDPR compliance certification None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-006",
+      "party": "Vendor X",
+      "obligation_type": "Compliance",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "none",
+      "certification",
+      "compliance",
+      "gdpr"
+    ],
+    "doc_id": "a08e1bce-c6da-430b-92a2-5729017704d2"
+  },
+  "fad8bdf1-1412-48eb-b48c-4df9f4544498": {
+    "content": "Rebate for service availability below 99% Service availability falls below 99%",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-007",
+      "party": "Vendor X",
+      "obligation_type": "Rebate",
+      "deadline": null,
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "service",
+      "below",
+      "falls",
+      "rebate",
+      "availability"
+    ],
+    "doc_id": "fad8bdf1-1412-48eb-b48c-4df9f4544498"
+  },
+  "49560d9e-aeae-49a3-b7de-b46dc01c8c3a": {
+    "content": "Termination notice Terminated without cause",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-008",
+      "party": "Either party",
+      "obligation_type": "Other",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "without",
+      "termination",
+      "notice",
+      "cause",
+      "terminated"
+    ],
+    "doc_id": "49560d9e-aeae-49a3-b7de-b46dc01c8c3a"
+  },
+  "41e13d31-9e14-457d-9413-139d6dfe9ac5": {
+    "content": "Monthly SLA dashboard None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "cd103ff3-b949-497d-86af-fc4f04d225d6",
+      "obligation_id": "O-cd103ff3-009",
+      "party": "Vendor X",
+      "obligation_type": "Report Submission",
+      "deadline": null,
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "none",
+      "monthly",
+      "dashboard"
+    ],
+    "doc_id": "41e13d31-9e14-457d-9413-139d6dfe9ac5"
+  }
+}

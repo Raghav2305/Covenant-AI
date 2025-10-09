@@ -3,7 +3,7 @@ Contract database model
 """
 
 from sqlalchemy import Column, String, DateTime, Text, Integer, Boolean, ForeignKey
-# from sqlalchemy.dialects.postgresql import UUID  # Not needed for SQLite
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -14,7 +14,7 @@ class Contract(Base):
     """Contract model"""
     __tablename__ = "contracts"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=False)
     party_a = Column(String(255), nullable=False)
     party_b = Column(String(255), nullable=False)

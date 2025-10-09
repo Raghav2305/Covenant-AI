@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
 
-from app.core.simple_database import get_db
+from app.core.database import get_db
 from app.models.obligation import Obligation
 from app.models.alert import Alert
 from app.services.monitoring_engine import MonitoringEngine
