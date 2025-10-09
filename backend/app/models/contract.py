@@ -52,6 +52,7 @@ class Contract(Base):
             "file_path": self.file_path,
             "processing_status": self.processing_status,
             "processing_error": self.processing_error,
+            "extracted_text": self.extracted_text, # Ensure extracted_text is always included
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "obligation_count": len(self.obligations) if self.obligations else 0

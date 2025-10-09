@@ -1,11 +1,12 @@
+
 import React from 'react';
 import { Typography } from '@mui/material';
 import ContractsPage from './ContractsPage';
 import ContractDetailPage from './ContractDetailPage';
+import ObligationsPage from './ObligationsPage'; // Import the new ObligationsPage
 
 // Define placeholder pages
 const DashboardPage: React.FC = () => <Typography variant="h3">Dashboard</Typography>;
-const ObligationsPage: React.FC = () => <Typography variant="h3">Obligation Management</Typography>;
 const CopilotPage: React.FC = () => <Typography variant="h3">AI Copilot</Typography>;
 const AlertsPage: React.FC = () => <Typography variant="h3">Alerts & Notifications</Typography>;
 const ReportsPage: React.FC = () => <Typography variant="h3">Reports</Typography>;
@@ -15,7 +16,7 @@ export {
   DashboardPage,
   ContractsPage,
   ContractDetailPage,
-  ObligationsPage,
+  ObligationsPage, // Export the new ObligationsPage
   CopilotPage,
   AlertsPage,
   ReportsPage,

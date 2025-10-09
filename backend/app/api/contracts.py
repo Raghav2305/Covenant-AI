@@ -131,6 +131,8 @@ async def get_contract(
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
     
+    logger.info("Returning contract details", contract_id=contract_id, extracted_text_length=len(contract.extracted_text) if contract.extracted_text else 0)
+
     return {
         "contract": contract.to_dict(),
         "obligations": [obligation.to_dict() for obligation in contract.obligations],

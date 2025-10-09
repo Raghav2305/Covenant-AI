@@ -14,6 +14,7 @@ export type Contract = {
   end_date: string;
   processing_status: string;
   created_at: string;
+  extracted_text: string; // Added extracted_text
 }
 
 export const getContracts = async (): Promise<Contract[]> => {

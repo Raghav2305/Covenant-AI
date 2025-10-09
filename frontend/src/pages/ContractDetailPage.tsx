@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper, Grid, CircularProgress, Alert, Card, CardContent, Chip, Tooltip } from '@mui/material';
+import { Box, Typography, Paper, Grid, CircularProgress, Alert, Card, CardContent, Chip, Tooltip, Button } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import { getContractById } from '../services/contractService';
+import HighlightedContractModal from '../components/HighlightedContractModal'; // Import the new modal
 
 // Expanded interface to include ALL fields from the backend Obligation model
 interface Obligation {
@@ -43,6 +43,7 @@ interface ContractDetails {
   contract_type: string;
   start_date: string;
   end_date: string;
+  extracted_text: string; // Added extracted_text
 }
 
 // Function to format currency
@@ -135,6 +136,7 @@ const ContractDetailPage: React.FC = () => {
   const [obligations, setObligations] = useState<Obligation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for the new modal
 
   useEffect(() => {
     if (contractId) {
@@ -144,6 +146,7 @@ const ContractDetailPage: React.FC = () => {
           const data = await getContractById(contractId);
           setContract(data.contract);
           setObligations(data.obligations);
+          console.log("Fetched contract object:", data.contract); // Log the fetched contract
           setError(null);
         } catch (err) {
           setError('Failed to fetch contract details.');
@@ -168,6 +171,8 @@ const ContractDetailPage: React.FC = () => {
     return <Alert severity="info">No contract data found.</Alert>;
   }
 
+  console.log("ContractDetailPage is rendering.");
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>{contract.title}</Typography>
@@ -179,6 +184,11 @@ const ContractDetailPage: React.FC = () => {
         <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">Type</Typography><Typography>{contract.contract_type || 'N/A'}</Typography></CardContent></Card></Grid>
         <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">Start Date</Typography><Typography>{contract.start_date ? new Date(contract.start_date).toLocaleDateString() : 'N/A'}</Typography></CardContent></Card></Grid>
         <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">End Date</Typography><Typography>{contract.end_date ? new Date(contract.end_date).toLocaleDateString() : 'N/A'}</Typography></CardContent></Card></Grid>
+        <Grid item xs={12}>
+          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+            View Highlighted Contract Text
+          </Button>
+        </Grid>
       </Grid>
 
       <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Extracted Obligations</Typography>
@@ -200,6 +210,15 @@ const ContractDetailPage: React.FC = () => {
           }}
         />
       </Paper>
+      {contract.extracted_text && (
+        console.log("Rendering modal. isModalOpen:", isModalOpen, "extracted_text length:", contract.extracted_text.length),
+        <HighlightedContractModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          extractedText={contract.extracted_text}
+          obligations={obligations}
+        />
+      )}
     </Box>
   );
 };
