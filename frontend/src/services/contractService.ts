@@ -40,3 +40,13 @@ export const uploadContract = async (formData: FormData): Promise<any> => {
     throw error;
   }
 };
+
+export const getContractById = async (id: string): Promise<any> => {
+  try {
+    const response = await axios.get(`${API_URL}/contracts/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching contract with id ${id}:`, error);
+    throw error;
+  }
+};

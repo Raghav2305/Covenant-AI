@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
-import { Add } from '@mui/icons-material';
+import { Add } from '@mui/icons-material'; // Restored this import
+import { useNavigate } from 'react-router-dom'; // Kept this import
 import type { Contract } from '../services/contractService';
 import { getContracts } from '../services/contractService';
 import ContractUploadModal from '../components/ContractUploadModal';
@@ -26,7 +26,12 @@ const columns: GridColDef[] = [
 const ContractsPage: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Restored this state
+  const navigate = useNavigate(); // Kept this hook
+
+  const handleRowClick = (params: any) => {
+    navigate(`/contracts/${params.id}`);
+  };
 
   const fetchContracts = async () => {
     setLoading(true);
@@ -40,7 +45,7 @@ const ContractsPage: React.FC = () => {
   }, []);
 
   const handleUploadSuccess = () => {
-    fetchContracts(); // Refresh the list after a successful upload
+    fetchContracts();
     setIsModalOpen(false);
   };
 
@@ -58,7 +63,9 @@ const ContractsPage: React.FC = () => {
           columns={columns}
           loading={loading}
           pageSizeOptions={[10, 25, 50]}
-          getRowId={(row) => row.id}
+          getRowId={(row) => row.id} // Restored this prop
+          onRowClick={handleRowClick} // Kept this prop
+          sx={{ '& .MuiDataGrid-row': { cursor: 'pointer' } }} // Kept this styling
         />
       </Paper>
       <ContractUploadModal

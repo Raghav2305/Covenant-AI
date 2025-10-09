@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Typography } from '@mui/material';
 import ContractsPage from './ContractsPage';
+import ContractDetailPage from './ContractDetailPage';
 
 // Define placeholder pages
 const DashboardPage: React.FC = () => <Typography variant="h3">Dashboard</Typography>;
@@ -14,6 +14,7 @@ const ReportsPage: React.FC = () => <Typography variant="h3">Reports</Typography
 export {
   DashboardPage,
   ContractsPage,
+  ContractDetailPage,
   ObligationsPage,
   CopilotPage,
   AlertsPage,
