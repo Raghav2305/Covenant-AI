@@ -1,18 +1,11 @@
 
 import React from 'react';
-import { Box, Paper, Typography, Chip, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Box, Paper, Typography, Chip, Link } from '@mui/material';
 
-export type Message = {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  metadata?: Record<string, any>;
-};
-
-interface MessageListProps {
-  messages: Message[];
-}
+// ... (rest of the imports)
 
 const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   return (
@@ -20,7 +13,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       {messages.map(msg => (
         <Box key={msg.id} sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
           <Paper sx={{ p: 1.5, maxWidth: '70%', bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.300', color: msg.sender === 'user' ? 'primary.contrastText' : 'inherit' }}>
-            <Typography variant="body1">{msg.text}</Typography>
+            {msg.sender === 'user' ? (
+              <Typography variant="body1">{msg.text}</Typography>
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+            )}
           </Paper>
           {msg.sender === 'bot' && msg.metadata?.sources && (
             <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>

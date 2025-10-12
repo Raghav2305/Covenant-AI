@@ -47,9 +47,15 @@ interface ContractDetails {
 }
 
 // Function to format currency
-const formatCurrency = (amount: number | null, currency: string = 'INR') => {
+const formatCurrency = (amount: number | null, currency: string | null | undefined = 'INR') => {
   if (amount === null || amount === undefined) return 'N/A';
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(amount);
+  const effectiveCurrency = currency && currency !== 'null' ? currency : 'INR'; // Use INR if currency is null or 'null' string
+  try {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: effectiveCurrency }).format(amount);
+  } catch (e) {
+    console.error("Invalid currency code provided to formatCurrency:", effectiveCurrency, e);
+    return `${amount} (Invalid Currency)`; // Fallback for truly invalid codes
+  }
 };
 
 const getStatusChipColor = (status: string) => {

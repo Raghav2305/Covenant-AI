@@ -232,9 +232,9 @@ Return ONLY the JSON, no additional text.
         cleaned['deadline'] = self._parse_date(obligation.get('deadline'))
         cleaned['frequency'] = str(obligation.get('frequency', '')).strip() or None
         cleaned['penalty_amount'] = self._parse_amount(obligation.get('penalty_amount'))
-        cleaned['penalty_currency'] = str(obligation.get('penalty_currency', 'INR')).strip()
+        cleaned['penalty_currency'] = self._validate_currency(obligation.get('penalty_currency')) or 'INR'
         cleaned['rebate_amount'] = self._parse_amount(obligation.get('rebate_amount'))
-        cleaned['rebate_currency'] = str(obligation.get('rebate_currency', 'INR')).strip()
+        cleaned['rebate_currency'] = self._validate_currency(obligation.get('rebate_currency')) or 'INR'
         cleaned['condition'] = str(obligation.get('condition', '')).strip() or None
         cleaned['risk_level'] = str(obligation.get('risk_level', 'medium')).strip().lower()
         
@@ -244,6 +244,28 @@ Return ONLY the JSON, no additional text.
         
         return cleaned
     
+    def _validate_currency(self, currency_code: Optional[str]) -> Optional[str]:
+        """Validate if a string is a valid ISO 4217 currency code"""
+        if not currency_code:
+            return None
+        
+        # A simple check for common currency codes or a regex for 3-letter codes
+        # For a robust solution, a dedicated library or a comprehensive list would be used
+        valid_currencies = ["INR", "USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "SEK", "NZD"]
+        
+        if currency_code.upper() in valid_currencies:
+            return currency_code.upper()
+        
+        # If it's a common non-currency term that might be mistaken for one
+        if currency_code.lower() in ["percentage", "percent", "null", "n/a"]:
+            return None
+            
+        # Fallback for potentially invalid codes
+        if len(currency_code) == 3 and currency_code.isalpha():
+            return currency_code.upper() # Assume it's a valid 3-letter code
+            
+        return None # Not a valid currency
+
     def _parse_date(self, date_str: Any) -> Optional[datetime]:
         """Parse date string to datetime object"""
         if not date_str:

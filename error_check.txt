@@ -1,5 +1,13 @@
-Hello! I am the Contract AI Copilot. How can I help you today?
-
-what are the current 'high risk' obligations in the contracts that we have in the system
-
-I'm sorry, but I can't provide the help you're looking for. As an AI, I don't have access to real-time databases or systems to pull specific contract data. I can assist in explaining how to identify high risk obligations in contracts or how to manage them effectively.
+Unexpected Application Error!
+RouterLink is not defined
+ReferenceError: RouterLink is not defined
+    at http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:32:26
+    at Array.map (<anonymous>)
+    at http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:27:30
+    at Array.map (<anonymous>)
+    at MessageList (http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:6:59)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:997:72)

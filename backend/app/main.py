@@ -7,6 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import structlog
+import logging
+import sys
+from structlog.stdlib import ProcessorFormatter, LoggerFactory
 
 from app.core.config import settings
 from app.core.simple_database import init_db
@@ -27,12 +30,21 @@ structlog.configure(
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
-        renderer
+        ProcessorFormatter.wrap_for_formatter, # Added this
     ],
     context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
+    logger_factory=LoggerFactory(), # Changed this
     wrapper_class=structlog.stdlib.BoundLogger,
     cache_logger_on_first_use=True,
+)
+
+# Configure standard Python logging to route through structlog
+logging.basicConfig(
+    format="%(message)s",
+    level=logging.DEBUG, # Changed to DEBUG
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 
 logger = structlog.get_logger()
@@ -132,5 +144,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=settings.DEBUG,
-        log_level="info"
+        log_level="info",
+        log_config=None # Disable uvicorn's default logging
     )

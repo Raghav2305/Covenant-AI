@@ -118,10 +118,20 @@ Respond in JSON format:
     ) -> str:
         """Generate natural language response for copilot queries"""
         
-        context_text = "\n\n".join([
-            f"Document: {doc.get('title', 'Unknown')}\nContent: {doc.get('content', '')}"
-            for doc in context_documents
-        ])
+        context_text = ""
+        for doc in context_documents:
+            doc_type = doc.get('metadata', {}).get('type', 'Unknown')
+            doc_identifier = ""
+            if doc_type == 'contract':
+                doc_identifier = doc.get('metadata', {}).get('title', 'Contract')
+            elif doc_type == 'obligation':
+                doc_identifier = doc.get('metadata', {}).get('obligation_id', 'Obligation')
+                if doc.get('metadata', {}).get('description'):
+                    doc_identifier += f": {doc.get('metadata', {}).get('description')}"
+            else:
+                doc_identifier = doc.get('id', 'Document') # Fallback to doc_id or generic
+
+            context_text += f"Document Type: {doc_type}\nIdentifier: {doc_identifier}\nContent: {doc.get('content', '')}\n\n"
         
         prompt = f"""
 You are an AI copilot for contract lifecycle management. Answer the user's question based on the provided contract and obligation context.
@@ -136,9 +146,12 @@ Provide a helpful, accurate response that:
 2. Cites specific contract clauses or obligations
 3. Includes relevant deadlines, amounts, or conditions
 4. Offers actionable insights when appropriate
+5. **Uses Markdown for clear formatting (e.g., bullet points, bold text, newlines).**
 
 Be conversational but professional. If you cannot find relevant information, say so clearly.
 """
+        
+        logger.info("LLM copilot prompt generated", query=query[:100], context_documents_count=len(context_documents), prompt_length=len(prompt), full_prompt=prompt) # Add this line
         
         try:
             response = await self.client.chat.completions.create(
@@ -154,9 +167,12 @@ Be conversational but professional. If you cannot find relevant information, say
                     }
                 ],
                 temperature=0.3,
-                max_tokens=1500
+                max_tokens=700, # Reduced max_tokens
+                timeout=30.0 # Added timeout
             )
+            logger.debug("OpenAI API call successful, processing response.") # New log
             
+            logger.info("LLM raw copilot response", raw_response=response.choices[0].message.content)
             return response.choices[0].message.content
             
         except Exception as e:

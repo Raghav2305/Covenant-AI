@@ -214,5 +214,345 @@
       "dashboard"
     ],
     "doc_id": "41e13d31-9e14-457d-9413-139d6dfe9ac5"
+  },
+  "4fa917be-4958-4d1f-94fc-54b848e608ff": {
+    "content": "SERVICE AGREEMENT\n\nThis Service Agreement (\"Agreement\") is made and entered into on this 1st day of October, 2025,\n\nBETWEEN:\n\nParty A:\nAirlock AI, a company incorporated under the laws of India, having its registered office at [Client Address] (hereinafter referred to as \"Client\").\n\nAND\n\nParty B:\nRaghav, a company incorporated under the laws of India, having its registered office at [Service Provider Address] (hereinafter referred to as \"Provider\").\n\nWHEREAS, Client desires to obtain, and Provider desires to provide, certain IT Managed Services as more fully described herein.\n\n1. TERM AND TERMINATION\n   1.1. This Agreement shall commence on October 1, 2025 (\"Effective Date\") and shall continue for an initial term of two (2) years, unless terminated earlier in accordance with the provisions herein.\n   1.2. Either Party may terminate this Agreement for convenience by providing ninety (90) days' written notice to the other Party.\n   1.3. Either Party may terminate this Agreement immediately upon written notice if the other Party commits a material breach of this Agreement and fails to cure such breach within thirty (30) days of receiving written notice thereof.\n   1.4. Provider may terminate this Agreement immediately if Client fails to make any payment due hereunder within sixty (60) days of its due date.\n   1.5. Termination Penalty: If Client terminates this Agreement for convenience before the end of the initial term, Client shall pay Provider a termination fee of INR 5,00,000. This is a high-risk obligation for the Client.\n\n2. SERVICE LEVEL OBLIGATIONS (SLAs)\n   2.1. Service Availability: Provider shall ensure a monthly service availability of 99.9% for critical systems.\n      - Measurement: Monthly, based on 24/7 monitoring.\n      - Reporting: Monthly SLA report due by the 5th business day of the following month. This is a medium-risk obligation for the Provider.\n      - Penalty: For every 0.1% drop below 99.9% availability, Provider shall pay Client a penalty of INR 1,00,000. This is a critical-risk obligation for the Provider.\n   2.2. Incident Response Time:\n      - Critical Incidents (Severity 1): Response within 1 hour, Resolution within 4 hours. This is a high-risk obligation for the Provider.\n      - High Incidents (Severity 2): Response within 2 hours, Resolution within 8 hours.\n      - Medium Incidents (Severity 3): Response within 4 hours, Resolution within 24 hours.\n      - Low Incidents (Severity 4): Response within 8 hours, Resolution within 48 hours.\n   2.3. Patch Management: Provider shall apply critical security patches within 72 hours of release. This is a high-risk obligation for the Provider.\n\n3. FINANCIAL TERMS\n   3.1. Service Fee: Client shall pay Provider a monthly service fee of INR 10,00,000.\n   3.2. Payment Terms: Invoices shall be submitted by the 25th of each month and are due within thirty (30) days of the invoice date.\n   3.3. Late Payment Penalty: Payments not received within thirty (30) days of the due date shall incur a late payment penalty of 1.5% per month on the overdue amount. This is a high-risk obligation for the Client.\n   3.4. Volume Discount: If Client's transaction volume exceeds 5,000,000 transactions per quarter, a 2% discount will be applied to the following month's service fee. This is a low-risk obligation for the Provider.\n   3.5. Discount Cap: The total cumulative discount applied in any given month shall not exceed 5% of the monthly service fee. This is a medium-risk obligation for the Provider.\n\n4. COMPLIANCE OBLIGATIONS\n   4.1. GDPR Compliance: Provider shall maintain full GDPR compliance and provide an annual compliance certificate by January 31st of each year. This is a critical-risk obligation for the Provider.\n   4.2. Security Audit: Provider shall facilitate and cooperate with Client's annual security audit, to be completed by June 30th each year. Provider must provide all requested documentation within 10 business days of request. This is a high-risk obligation for the Provider.\n   4.3. Data Backup Verification: Provider shall submit a weekly data backup verification report every Friday. This is a medium-risk obligation for the Provider.\n\n5. REBATE CONDITIONS\n   5.1. Availability Rebate: If monthly service availability falls below 99.5%, Client shall receive a rebate of INR 50,000 for that month. This is a medium-risk obligation for the Provider.\n   5.2. Incident Resolution Rebate: If Provider fails to resolve a Critical Incident (Severity 1) within 6 hours, Client shall receive a rebate of INR 25,000 per incident. This is a high-risk obligation for the Provider.\n\n6. REPORTING REQUIREMENTS\n   6.1. Monthly Performance Report: Provider shall submit a detailed performance report by the 10th of each month, covering all SLAs and key metrics.\n   6.2. Quarterly Business Review (QBR): A QBR meeting shall be held by the 15th day following the end of each calendar quarter, with a comprehensive report provided 5 business days prior to the meeting.\n   6.3. Annual Compliance Report: Provider shall submit an annual compliance report by January 31st of the following year.\n\n7. CONFIDENTIALITY\n   7.1. Both Parties agree to keep all confidential information of the other Party confidential during and after the term of this Agreement. This is a low-risk obligation for both parties.\n\nIN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.\n\n[Client Company Name]                 [Service Provider Company Name]\nBy: _________________________         By: _________________________\nName: [Client Signatory Name]         Name: [Provider Signatory Name]\nTitle: [Client Signatory Title]       Title: [Provider Signatory Title]\nDate: _________________________       Date: _________________________",
+    "metadata": {
+      "type": "contract",
+      "title": "Demo Test 2",
+      "party_a": "AirLock AI",
+      "party_b": "Raghav",
+      "contract_type": null
+    },
+    "keywords": [
+      "term,",
+      "breach",
+      "date\")",
+      "3.2.",
+      "received",
+      "having",
+      "terminates",
+      "company",
+      "measurement:",
+      "annual",
+      "must",
+      "certificate",
+      "providing",
+      "reporting:",
+      "laws",
+      "incidents",
+      "conditions",
+      "applied",
+      "apply",
+      "comprehensive"
+    ],
+    "doc_id": "4fa917be-4958-4d1f-94fc-54b848e608ff"
+  },
+  "4e2061a1-07bc-4a28-908b-fccf056c06df": {
+    "content": "Ensure a monthly service availability of 99.9% for critical systems For every 0.1% drop below 99.9% availability",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-001",
+      "party": "Party B",
+      "obligation_type": "SLA",
+      "deadline": null,
+      "risk_level": "critical"
+    },
+    "keywords": [
+      "ensure",
+      "critical",
+      "every",
+      "0.1%",
+      "systems",
+      "below",
+      "drop",
+      "service",
+      "monthly",
+      "availability",
+      "99.9%"
+    ],
+    "doc_id": "4e2061a1-07bc-4a28-908b-fccf056c06df"
+  },
+  "80b53b3f-6cd8-4490-a1c2-330bbb690420": {
+    "content": "Incident Response Time for Critical Incidents (Severity 1) If Provider fails to resolve a Critical Incident (Severity 1) within 6 hours",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-002",
+      "party": "Party B",
+      "obligation_type": "SLA",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "provider",
+      "incident",
+      "hours",
+      "critical",
+      "fails",
+      "time",
+      "within",
+      "incidents",
+      "(severity",
+      "resolve",
+      "response"
+    ],
+    "doc_id": "80b53b3f-6cd8-4490-a1c2-330bbb690420"
+  },
+  "b9dd384f-ecbc-4236-9cc0-f5d55ed353f1": {
+    "content": "Apply critical security patches within 72 hours of release None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-003",
+      "party": "Party B",
+      "obligation_type": "SLA",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "apply",
+      "release",
+      "hours",
+      "critical",
+      "security",
+      "patches",
+      "none",
+      "within"
+    ],
+    "doc_id": "b9dd384f-ecbc-4236-9cc0-f5d55ed353f1"
+  },
+  "840caf1d-3034-4d45-ade5-856565218139": {
+    "content": "Pay Provider a monthly service fee of INR 10,00,000 None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-004",
+      "party": "Party A",
+      "obligation_type": "Payment",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "provider",
+      "10,00,000",
+      "none",
+      "service",
+      "monthly"
+    ],
+    "doc_id": "840caf1d-3034-4d45-ade5-856565218139"
+  },
+  "3701e8ea-2620-4be3-b56c-4cebef0b2009": {
+    "content": "Late Payment Penalty Payments not received within thirty (30) days of the due date",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-005",
+      "party": "Party A",
+      "obligation_type": "Payment",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "thirty",
+      "penalty",
+      "late",
+      "date",
+      "received",
+      "days",
+      "payment",
+      "payments",
+      "within",
+      "(30)"
+    ],
+    "doc_id": "3701e8ea-2620-4be3-b56c-4cebef0b2009"
+  },
+  "13a50863-2405-4bd6-b285-cd56de940763": {
+    "content": "Volume Discount If Client's transaction volume exceeds 5,000,000 transactions per quarter",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-006",
+      "party": "Party B",
+      "obligation_type": "Discount",
+      "deadline": null,
+      "risk_level": "low"
+    },
+    "keywords": [
+      "exceeds",
+      "transaction",
+      "quarter",
+      "discount",
+      "volume",
+      "transactions",
+      "5,000,000",
+      "client's"
+    ],
+    "doc_id": "13a50863-2405-4bd6-b285-cd56de940763"
+  },
+  "ab9f49ba-7eeb-490d-9ba4-ef7918233907": {
+    "content": "Maintain full GDPR compliance and provide an annual compliance certificate None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-007",
+      "party": "Party B",
+      "obligation_type": "Compliance",
+      "deadline": "2026-01-31T00:00:00",
+      "risk_level": "critical"
+    },
+    "keywords": [
+      "full",
+      "maintain",
+      "gdpr",
+      "compliance",
+      "annual",
+      "certificate",
+      "none",
+      "provide"
+    ],
+    "doc_id": "ab9f49ba-7eeb-490d-9ba4-ef7918233907"
+  },
+  "a29585f1-ab46-4a4c-b43d-0cee7a58f41c": {
+    "content": "Facilitate and cooperate with Client's annual security audit Provider must provide all requested documentation within 10 business days of request",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-008",
+      "party": "Party B",
+      "obligation_type": "Compliance",
+      "deadline": "2026-06-30T00:00:00",
+      "risk_level": "high"
+    },
+    "keywords": [
+      "documentation",
+      "provider",
+      "audit",
+      "security",
+      "days",
+      "facilitate",
+      "annual",
+      "must",
+      "request",
+      "requested",
+      "within",
+      "client's",
+      "cooperate",
+      "business",
+      "provide"
+    ],
+    "doc_id": "a29585f1-ab46-4a4c-b43d-0cee7a58f41c"
+  },
+  "de8c80a9-dae7-4003-a3f1-b8e375b6d2d0": {
+    "content": "Submit a weekly data backup verification report Every Friday",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-009",
+      "party": "Party B",
+      "obligation_type": "Compliance",
+      "deadline": null,
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "submit",
+      "weekly",
+      "report",
+      "every",
+      "verification",
+      "friday",
+      "data",
+      "backup"
+    ],
+    "doc_id": "de8c80a9-dae7-4003-a3f1-b8e375b6d2d0"
+  },
+  "c06bd82c-0995-4fc2-a2c1-f7bab151b7e7": {
+    "content": "Submit a detailed performance report By the 10th of each month",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-010",
+      "party": "Party B",
+      "obligation_type": "Report Submission",
+      "deadline": null,
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "submit",
+      "report",
+      "each",
+      "month",
+      "detailed",
+      "10th",
+      "performance"
+    ],
+    "doc_id": "c06bd82c-0995-4fc2-a2c1-f7bab151b7e7"
+  },
+  "83c647a1-e696-438c-814e-fe418b62af61": {
+    "content": "Submit an annual compliance report None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-011",
+      "party": "Party B",
+      "obligation_type": "Report Submission",
+      "deadline": "2026-01-31T00:00:00",
+      "risk_level": "medium"
+    },
+    "keywords": [
+      "submit",
+      "report",
+      "compliance",
+      "annual",
+      "none"
+    ],
+    "doc_id": "83c647a1-e696-438c-814e-fe418b62af61"
+  },
+  "0bcb05fe-45dd-4fcb-897e-2b90dc30bad9": {
+    "content": "Termination Penalty If Client terminates this Agreement for convenience before the end of the initial term",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-012",
+      "party": "Party A",
+      "obligation_type": "Payment",
+      "deadline": null,
+      "risk_level": "high"
+    },
+    "keywords": [
+      "initial",
+      "penalty",
+      "terminates",
+      "termination",
+      "before",
+      "this",
+      "client",
+      "convenience",
+      "term",
+      "agreement"
+    ],
+    "doc_id": "0bcb05fe-45dd-4fcb-897e-2b90dc30bad9"
+  },
+  "2d222b04-6d95-4ddc-9e4f-d77bb76b08d5": {
+    "content": "Keep all confidential information of the other Party confidential None",
+    "metadata": {
+      "type": "obligation",
+      "contract_id": "4fa917be-4958-4d1f-94fc-54b848e608ff",
+      "obligation_id": "O-4fa917be-013",
+      "party": "Both Parties",
+      "obligation_type": "Other",
+      "deadline": null,
+      "risk_level": "low"
+    },
+    "keywords": [
+      "party",
+      "confidential",
+      "information",
+      "none",
+      "other",
+      "keep"
+    ],
+    "doc_id": "2d222b04-6d95-4ddc-9e4f-d77bb76b08d5"
   }
 }

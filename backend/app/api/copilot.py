@@ -46,11 +46,18 @@ async def query_copilot(
         vector_store = SimpleVectorStore()
         await vector_store.initialize()
         
+        # Determine query type and extract filters
+        query_type, extracted_filters = _classify_query_type(query_data.query)
+
+        # Merge user-provided context_filters with extracted filters
+        effective_filters = query_data.context_filters if query_data.context_filters else {}
+        effective_filters.update(extracted_filters)
+
         # Search for relevant documents
         search_results = await vector_store.search_documents(
             query=query_data.query,
             limit=query_data.max_results or 10,
-            filters=query_data.context_filters
+            filters=effective_filters
         )
         
         # Generate response using LLM
@@ -59,16 +66,15 @@ async def query_copilot(
             search_results
         )
         
-        # Determine query type
-        query_type = _classify_query_type(query_data.query)
-        
         # Calculate confidence based on search results
         confidence = _calculate_confidence(search_results)
         
         logger.info("Copilot query completed", 
                    query_type=query_type,
                    confidence=confidence,
-                   sources_count=len(search_results))
+                   sources_count=len(search_results),
+                   effective_filters=effective_filters,
+                   search_results_preview=[{'id': r.get('id'), 'metadata': r.get('metadata'), 'similarity': r.get('similarity')} for r in search_results[:3]]) # Log effective filters
         
         return CopilotResponse(
             answer=answer,
@@ -305,22 +311,30 @@ async def search_contracts_and_obligations(
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
-def _classify_query_type(query: str) -> str:
-    """Classify the type of query"""
+def _classify_query_type(query: str) -> tuple[str, dict[str, Any]]:
+    """Classify the type of query and extract relevant filters"""
     query_lower = query.lower()
-    
+    extracted_filters = {}
+
     if any(word in query_lower for word in ["due", "deadline", "when", "next"]):
-        return "deadline_query"
+        # More sophisticated date parsing would go here
+        return "deadline_query", extracted_filters
     elif any(word in query_lower for word in ["risk", "high", "critical", "danger"]):
-        return "risk_query"
+        if "high" in query_lower or "critical" in query_lower:
+            extracted_filters["risk_level"] = ["high", "critical"]
+        elif "medium" in query_lower:
+            extracted_filters["risk_level"] = ["medium"]
+        elif "low" in query_lower:
+            extracted_filters["risk_level"] = ["low"]
+        return "risk_query", extracted_filters
     elif any(word in query_lower for word in ["penalty", "rebate", "money", "amount"]):
-        return "financial_query"
+        return "financial_query", extracted_filters
     elif any(word in query_lower for word in ["overdue", "late", "missed"]):
-        return "compliance_query"
+        return "compliance_query", extracted_filters
     elif any(word in query_lower for word in ["party", "client", "vendor"]):
-        return "party_query"
+        return "party_query", extracted_filters
     else:
-        return "general_query"
+        return "general_query", extracted_filters
 
 
 def _calculate_confidence(search_results: List[Dict[str, Any]]) -> float:

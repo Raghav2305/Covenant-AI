@@ -24,31 +24,39 @@ class SimpleVectorStore:
             return
         
         # Load existing documents if any
-        self._load_documents()
+        await self._load_documents()
         self.initialized = True
         logger.info("Simple vector store initialized")
     
-    def _load_documents(self):
-        """Load documents from file"""
+    async def _load_documents(self):
+        """Load documents from file asynchronously"""
         try:
             docs_file = "data/vector_documents.json"
             if os.path.exists(docs_file):
-                with open(docs_file, 'r', encoding='utf-8') as f:
-                    self.documents = json.load(f)
+                import aiofiles
+                async with aiofiles.open(docs_file, mode="r", encoding="utf-8") as f:
+                    content = await f.read()
+                    self.documents = json.loads(content)
                 logger.info(f"Loaded {len(self.documents)} documents from file")
+        except json.JSONDecodeError as e:
+            logger.error("Error decoding JSON from vector store file", file=docs_file, error=str(e))
+            self.documents = {}
         except Exception as e:
             logger.error("Failed to load documents", error=str(e))
             self.documents = {}
     
-    def _save_documents(self):
-        """Save documents to file"""
+    async def _save_documents(self):
+        """Save documents to file asynchronously"""
         try:
             docs_file = "data/vector_documents.json"
             os.makedirs(os.path.dirname(docs_file), exist_ok=True)
-            with open(docs_file, 'w', encoding='utf-8') as f:
-                json.dump(self.documents, f, indent=2, ensure_ascii=False)
+            import aiofiles
+            async with aiofiles.open(docs_file, mode="w", encoding="utf-8") as f:
+                await f.write(json.dumps(self.documents, indent=2, ensure_ascii=False))
+            logger.info("Documents saved to file", file=docs_file, count=len(self.documents))
         except Exception as e:
             logger.error("Failed to save documents", error=str(e))
+            raise # Re-raise the exception to make it visible
     
     async def add_document(
         self, 
@@ -71,7 +79,7 @@ class SimpleVectorStore:
                 "doc_id": doc_id
             }
             
-            self._save_documents()
+            await self._save_documents()
             logger.info("Document added to simple vector store", doc_id=doc_id)
             return True
             
@@ -100,27 +108,31 @@ class SimpleVectorStore:
         
         try:
             query_keywords = self._extract_keywords(query)
-            results = []
             
+            # Step 1: Filter documents based on metadata filters
+            candidate_documents = []
             for doc_id, doc_data in self.documents.items():
-                # Apply filters
                 if filters:
                     if not self._matches_filters(doc_data, filters):
                         continue
-                
-                # Calculate relevance score
+                candidate_documents.append(doc_data)
+
+            # Step 2: Calculate relevance score for candidate documents
+            results = []
+            for doc_data in candidate_documents:
                 score = self._calculate_relevance_score(query_keywords, doc_data["keywords"])
                 
-                if score > 0:
-                    result = {
-                        "content": doc_data["content"],
-                        "doc_id": doc_data["doc_id"],
-                        "metadata": doc_data["metadata"],
-                        "similarity": score / 100.0  # Normalize to 0-1
-                    }
-                    results.append(result)
+                # Even if score is 0, if it passed filters, include it.
+                # The LLM can decide relevance from content.
+                result = {
+                    "content": doc_data["content"],
+                    "doc_id": doc_data["doc_id"],
+                    "metadata": doc_data["metadata"],
+                    "similarity": score / 100.0  # Normalize to 0-1
+                }
+                results.append(result)
             
-            # Sort by relevance
+            # Sort by relevance (highest score first)
             results.sort(key=lambda x: x["similarity"], reverse=True)
             
             return results[:limit]
@@ -134,14 +146,18 @@ class SimpleVectorStore:
         metadata = doc_data.get("metadata", {})
         
         for key, value in filters.items():
+            logger.debug("Checking filter", doc_id=doc_data.get("doc_id"), filter_key=key, filter_value=value, doc_metadata_value=metadata.get(key))
             if key in metadata:
                 if isinstance(value, list):
                     if metadata[key] not in value:
+                        logger.debug("Filter mismatch (list)", doc_id=doc_data.get("doc_id"), filter_key=key, filter_value=value, doc_metadata_value=metadata.get(key))
                         return False
                 else:
                     if metadata[key] != value:
+                        logger.debug("Filter mismatch (single)", doc_id=doc_data.get("doc_id"), filter_key=key, filter_value=value, doc_metadata_value=metadata.get(key))
                         return False
             else:
+                logger.debug("Filter key not in metadata", doc_id=doc_data.get("doc_id"), filter_key=key)
                 return False
         
         return True
