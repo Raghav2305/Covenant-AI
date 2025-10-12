@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, Paper, Grid, CircularProgress, Alert, TextField, MenuItem, Select, InputLabel, FormControl, Chip, Card, CardContent, Tooltip } from '@mui/material';
+import { Box, Typography, Paper, Grid, CircularProgress, Alert, TextField, MenuItem, Select, InputLabel, FormControl, Chip, Card, CardContent, Tooltip, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
 import { getObligations, getObligationsSummary } from '../services/obligationService';
 import type { Obligation, ObligationFilters, ObligationSummary } from '../services/obligationService';
 import { useNavigate } from 'react-router-dom';
 
 const localizer = momentLocalizer(moment);
+
+const CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
 
 const getStatusChipColor = (status: string) => {
   switch (status.toLowerCase()) {
@@ -37,7 +41,33 @@ const ObligationsPage: React.FC = () => {
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ObligationFilters>({});
+  const [tab, setTab] = useState('1');
+  const [orderBy, setOrderBy] = useState<keyof Obligation>('deadline');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTab(newValue);
+  };
+
+  const handleRequestSort = (property: keyof Obligation) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortedObligations = useMemo(() => {
+    return [...obligations].sort((a, b) => {
+      const isAsc = order === 'asc';
+      if (a[orderBy] < b[orderBy]) {
+        return isAsc ? -1 : 1;
+      }
+      if (a[orderBy] > b[orderBy]) {
+        return isAsc ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [obligations, order, orderBy]);
 
   useEffect(() => {
     const fetchObligationsData = async () => {
@@ -87,14 +117,19 @@ const ObligationsPage: React.FC = () => {
     }
   };
 
-  const events = useMemo(() => obligations.map(obl => ({
-    id: obl.id,
-    title: `${obl.obligation_type} - ${obl.party}`,
-    start: obl.deadline ? moment(obl.deadline).toDate() : new Date(), // Use current date if deadline is null
-    end: obl.deadline ? moment(obl.deadline).toDate() : new Date(),
-    allDay: true,
-    resource: obl, // Store the full obligation object
-  })), [obligations]);
+  const events = useMemo(() =>
+    obligations
+      .filter(obl => obl.deadline) // Filter out obligations without a deadline
+      .map(obl => ({
+        id: obl.id,
+        title: `${obl.obligation_type} - ${obl.party}`,
+        start: moment(obl.deadline).toDate(),
+        end: moment(obl.deadline).toDate(),
+        allDay: true,
+        resource: obl,
+      })),
+    [obligations]
+  );
 
   const EventComponent = ({ event }: any) => (
     <Tooltip title={event.resource.description}>
@@ -221,18 +256,134 @@ const ObligationsPage: React.FC = () => {
       {error && <Alert severity="error">{error}</Alert>}
 
       {!loading && !error && (
-        <Paper sx={{ height: 600, width: '100%', p: 2 }}>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '100%' }}
-            components={{
-              event: EventComponent,
-            }}
-            onSelectEvent={(event) => navigate(`/contracts/${event.resource.contract_id}`)}
-          />
+        <Paper sx={{ p: 2, mt: 3 }}>
+          <TabContext value={tab}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <TabList onChange={handleTabChange} aria-label="obligation views">
+                <Tab label="Calendar View" value="1" />
+                <Tab label="Table View" value="2" />
+                <Tab label="Timeline View" value="3" />
+                <Tab label="Dashboard" value="4" />
+              </TabList>
+            </Box>
+            <TabPanel value="1">
+              <Box sx={{ height: 600 }}>
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  style={{ height: '100%' }}
+                  components={{
+                    event: EventComponent,
+                  }}
+                  onSelectEvent={(event) => navigate(`/contracts/${event.resource.contract_id}`)}
+                />
+              </Box>
+            </TabPanel>
+            <TabPanel value="2">
+              <TableContainer>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sortDirection={orderBy === 'deadline' ? order : false}>
+                        <TableSortLabel
+                          active={orderBy === 'deadline'}
+                          direction={orderBy === 'deadline' ? order : 'asc'}
+                          onClick={() => handleRequestSort('deadline')}
+                        >
+                          Deadline
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell>Party</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Risk Level</TableCell>
+                      <TableCell>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {sortedObligations.map((obl) => (
+                      <TableRow
+                        key={obl.id}
+                        hover
+                        onClick={() => navigate(`/contracts/${obl.contract_id}`)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        <TableCell>{obl.deadline ? moment(obl.deadline).format('YYYY-MM-DD') : 'N/A'}</TableCell>
+                        <TableCell>{obl.description}</TableCell>
+                        <TableCell>{obl.party}</TableCell>
+                        <TableCell>{obl.obligation_type}</TableCell>
+                        <TableCell>
+                          <Chip label={obl.risk_level} color={getRiskChipColor(obl.risk_level)} size="small" />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label={obl.status} color={getStatusChipColor(obl.status)} size="small" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </TabPanel>
+            <TabPanel value="3">
+              <Box sx={{ my: 2 }}>
+                <Alert severity="info">
+                  The timeline view is a planned feature. It will provide an interactive, chronological visualization of all contract obligations and key milestones.
+                </Alert>
+              </Box>
+            </TabPanel>
+            <TabPanel value="4">
+              {summary ? (
+                <Box>
+                  <Card sx={{ mb: 3 }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom align="center">Status Distribution</Typography>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={Object.entries(summary.status_distribution).map(([name, value]) => ({ name, value }))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {Object.entries(summary.status_distribution).map(([name, value], index) => (
+                              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom align="center">Risk Distribution</Typography>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={Object.entries(summary.risk_distribution).map(([name, value]) => ({ name, value }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <RechartsTooltip />
+                          <Bar dataKey="value">
+                            {Object.entries(summary.risk_distribution).map(([name, value], index) => (
+                              <Cell key={`cell-${index}`} fill={getRiskChipColor(name)} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </Box>
+              ) : (
+                <Typography>Summary data not available for charts.</Typography>
+              )}
+            </TabPanel>
+          </TabContext>
         </Paper>
       )}
     </Box>

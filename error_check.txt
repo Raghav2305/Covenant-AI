@@ -1,11 +1,5 @@
-ReferenceError: Tooltip is not defined
-    at EventComponent (http://localhost:5173/src/pages/ObligationsPage.tsx?t=1760040400532:102:64)
-    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:18509:20)
-    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:5654:24)
-    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:7475:21)
-    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:8525:20)
-    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:997:72)
-    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:12561:98)
-    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:12424:43)
-    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:12408:13)
-    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=400e493e:11827:37)
+Hello! I am the Contract AI Copilot. How can I help you today?
+
+what are the current 'high risk' obligations in the contracts that we have in the system
+
+I'm sorry, but I can't provide the help you're looking for. As an AI, I don't have access to real-time databases or systems to pull specific contract data. I can assist in explaining how to identify high risk obligations in contracts or how to manage them effectively.
