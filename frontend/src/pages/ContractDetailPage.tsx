@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper, Grid, CircularProgress, Alert, Card, CardContent, Chip, Tooltip, Button } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { Box, Typography, Paper, Grid, CircularProgress, Alert, Chip, Tooltip, Button, Tabs, Tab, Divider, List, ListItem, ListItemText, Drawer, IconButton } from '@mui/material';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
+import { styled } from '@mui/material/styles';
 import { getContractById } from '../services/contractService';
-import HighlightedContractModal from '../components/HighlightedContractModal'; // Import the new modal
+import { Article, Gavel, Notifications, TextSnippet, Close } from '@mui/icons-material';
 
-// Expanded interface to include ALL fields from the backend Obligation model
+// --- Interfaces --- //
 interface Obligation {
   id: string;
   contract_id: string;
@@ -20,20 +21,20 @@ interface Obligation {
   rebate_amount: number | null;
   penalty_currency: string | null;
   rebate_currency: string | null;
-  condition: string | null; // Assuming JSON as text
-  trigger_conditions: string | null; // Assuming JSON as text
+  condition: string | null;
+  trigger_conditions: string | null;
   status: string;
   risk_level: string;
   last_checked: string | null;
   next_check: string | null;
   compliance_status: string;
-  compliance_evidence: string | null; // Assuming JSON as text
+  compliance_evidence: string | null;
   breach_count: number;
   last_breach_date: string | null;
   created_at: string;
   updated_at: string;
 }
-
+interface AlertData { id: string; title: string; message: string; severity: string; created_at: string; }
 interface ContractDetails {
   id: string;
   title: string;
@@ -43,188 +44,256 @@ interface ContractDetails {
   contract_type: string;
   start_date: string;
   end_date: string;
-  extracted_text: string; // Added extracted_text
+  extracted_text: string;
+  processing_status: string;
 }
 
-// Function to format currency
-const formatCurrency = (amount: number | null, currency: string | null | undefined = 'INR') => {
+// --- Styled Components --- //
+const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
+  border: 0,
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: theme.palette.grey[100],
+    borderBottom: `1px solid ${theme.palette.grey[300]}`, 
+  },
+  '& .MuiDataGrid-row:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  '& .MuiDataGrid-toolbarContainer': {
+    padding: theme.spacing(1),
+    borderBottom: `1px solid ${theme.palette.grey[300]}`,
+  }
+}));
+
+const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <ListItem sx={{ py: 1.5, px: 0 }}>
+        <ListItemText
+            primary={label}
+            primaryTypographyProps={{ fontWeight: 'bold', color: 'text.secondary', width: '40%' }}
+            secondary={value || 'N/A'}
+            secondaryTypographyProps={{ component: 'div', color: 'text.primary', textAlign: 'left' }}
+            sx={{ m: 0, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}
+        />
+    </ListItem>
+);
+
+// --- Helper Functions --- //
+const formatCurrency = (amount: number | null, currency: string | null = 'INR') => {
   if (amount === null || amount === undefined) return 'N/A';
-  const effectiveCurrency = currency && currency !== 'null' ? currency : 'INR'; // Use INR if currency is null or 'null' string
+  const effectiveCurrency = currency && currency !== 'null' ? currency : 'INR';
   try {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: effectiveCurrency }).format(amount);
   } catch (e) {
-    console.error("Invalid currency code provided to formatCurrency:", effectiveCurrency, e);
-    return `${amount} (Invalid Currency)`; // Fallback for truly invalid codes
+    return `${amount} (Invalid Currency)`;
   }
 };
-
-const getStatusChipColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'active': return 'primary';
-    case 'completed': return 'success';
-    case 'breached': return 'error';
-    case 'pending': return 'warning';
-    default: return 'default';
-  }
+const getStatusChipColor = (status: string): 'primary' | 'success' | 'error' | 'warning' | 'default' => {
+    if (!status) return 'default';
+    switch (status.toLowerCase()) {
+        case 'active': return 'primary';
+        case 'completed': return 'success';
+        case 'breached': return 'error';
+        case 'pending': return 'warning';
+        case 'compliant': return 'success';
+        case 'non_compliant': return 'error';
+        default: return 'default';
+    }
+};
+const getRiskChipColor = (riskLevel: string): 'success' | 'warning' | 'error' | 'default' => {
+    if (!riskLevel) return 'default';
+    switch (riskLevel.toLowerCase()) {
+        case 'low': return 'success';
+        case 'medium': return 'warning';
+        case 'high': return 'error';
+        case 'critical': return 'error';
+        default: return 'default';
+    }
 };
 
-const getRiskChipColor = (riskLevel: string) => {
-  switch (riskLevel.toLowerCase()) {
-    case 'low': return 'success';
-    case 'medium': return 'warning';
-    case 'high': return 'error';
-    case 'critical': return 'error';
-    default: return 'default';
-  }
-};
-
-const obligationColumns: GridColDef[] = [
-  { field: 'obligation_type', headerName: 'Type', width: 150 },
-  { field: 'description', headerName: 'Description', flex: 1, minWidth: 200 },
-  { 
-    field: 'penalty_amount',
-    headerName: 'Penalty',
-    type: 'number',
-    width: 130,
-    renderCell: (params) => formatCurrency(params.value, params.row.penalty_currency || undefined)
-  },
-  { 
-    field: 'rebate_amount',
-    headerName: 'Rebate',
-    type: 'number',
-    width: 130,
-    renderCell: (params) => formatCurrency(params.value, params.row.rebate_currency || undefined)
-  },
-  { 
-    field: 'deadline',
-    headerName: 'Next Deadline',
-    width: 150,
-    renderCell: (params) => params.value ? new Date(params.value).toLocaleDateString() : 'N/A'
-  },
-  { 
-    field: 'frequency',
-    headerName: 'Frequency',
-    width: 120,
-    renderCell: (params) => params.value || 'One-time'
-  },
-  { 
-    field: 'status',
-    headerName: 'Status',
-    width: 120,
-    renderCell: (params) => (
-      <Chip label={params.value} color={getStatusChipColor(params.value)} size="small" />
-    ),
-  },
-  { 
-    field: 'risk_level',
-    headerName: 'Risk Level',
-    width: 120,
-    renderCell: (params) => (
-      <Chip label={params.value} color={getRiskChipColor(params.value)} size="small" />
-    ),
-  },
-  { 
-    field: 'condition',
-    headerName: 'Condition',
-    flex: 1,
-    minWidth: 250,
-    renderCell: (params) => (
-      <Tooltip title={params.value || 'N/A'}>
-        <Typography variant="body2" noWrap>{params.value || 'N/A'}</Typography>
-      </Tooltip>
-    ),
-  },
-];
-
+// --- Main Component --- //
 const ContractDetailPage: React.FC = () => {
   const { contractId } = useParams<{ contractId: string }>();
-  const [contract, setContract] = useState<ContractDetails | null>(null);
-  const [obligations, setObligations] = useState<Obligation[]>([]);
+  const [data, setData] = useState<{ contract: ContractDetails; obligations: Obligation[]; alerts: AlertData[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for the new modal
+  const [activeTab, setActiveTab] = useState('details');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedObligation, setSelectedObligation] = useState<Obligation | null>(null);
+
+  const handleViewCondition = (obligation: Obligation) => {
+    setSelectedObligation(obligation);
+    setDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+  };
 
   useEffect(() => {
     if (contractId) {
-      const fetchContractDetails = async () => {
-        try {
-          setLoading(true);
-          const data = await getContractById(contractId);
-          setContract(data.contract);
-          setObligations(data.obligations);
-          console.log("Fetched contract object:", data.contract); // Log the fetched contract
-          setError(null);
-        } catch (err) {
+      setLoading(true);
+      getContractById(contractId)
+        .then(response => {
+            setData(response);
+        })
+        .catch(err => {
           setError('Failed to fetch contract details.');
           console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchContractDetails();
+        })
+        .finally(() => setLoading(false));
     }
   }, [contractId]);
 
-  if (loading) {
-    return <CircularProgress />;
-  }
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setActiveTab(newValue);
+  };
 
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
+  const highlightedText = useMemo(() => {
+    if (!data?.contract.extracted_text || !data?.obligations) return null;
+    let text = data.contract.extracted_text;
+    const descriptions = data.obligations.map(o => o.description).filter(Boolean);
+    if(descriptions.length === 0) return text;
+    const regex = new RegExp(`(${descriptions.map(d => d.replace(/[.*+?^${}()|[\\]/g, '\\$&')).join('|')})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  }, [data]);
 
-  if (!contract) {
-    return <Alert severity="info">No contract data found.</Alert>;
-  }
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!data) return <Alert severity="info">No contract data found.</Alert>;
 
-  console.log("ContractDetailPage is rendering.");
+  const { contract, obligations, alerts } = data;
+
+  const obligationColumns: GridColDef[] = [
+    { field: 'obligation_type', headerName: 'Type', width: 150 },
+    { field: 'description', headerName: 'Description', flex: 1, minWidth: 250 },
+    { field: 'party', headerName: 'Party', width: 150 },
+    { field: 'deadline', headerName: 'Next Deadline', width: 150, type: 'date', valueGetter: (value) => value ? new Date(value) : null },
+    { field: 'status', headerName: 'Status', width: 120, renderCell: (params) => <Chip label={params.value} color={getStatusChipColor(params.value)} size="small" /> },
+    { field: 'risk_level', headerName: 'Risk Level', width: 120, renderCell: (params) => <Chip label={params.value} color={getRiskChipColor(params.value)} size="small" /> },
+    { field: 'penalty_amount', headerName: 'Penalty', type: 'number', width: 130, renderCell: (params) => formatCurrency(params.value, params.row.penalty_currency) },
+    { field: 'rebate_amount', headerName: 'Rebate', type: 'number', width: 130, renderCell: (params) => formatCurrency(params.value, params.row.rebate_currency) },
+    { field: 'compliance_status', headerName: 'Compliance', width: 130, renderCell: (params) => <Chip label={params.value} color={getStatusChipColor(params.value)} size="small" variant="outlined" /> },
+    {
+        field: 'condition',
+        headerName: 'Condition',
+        width: 150,
+        sortable: false,
+        renderCell: (params) => {
+            return params.value ? (
+                <Button variant="outlined" size="small" onClick={() => handleViewCondition(params.row as Obligation)}>
+                    View
+                </Button>
+            ) : (
+                <Typography variant="body2" color="text.secondary">N/A</Typography>
+            );
+        },
+    },
+  ];
+
+  const alertColumns: GridColDef[] = [
+      { field: 'severity', headerName: 'Severity', width: 120, renderCell: (params) => <Chip label={params.value} color={getRiskChipColor(params.value)} size="small" /> },
+      { field: 'title', headerName: 'Title', flex: 1 },
+      { field: 'created_at', headerName: 'Date', width: 180, type: 'dateTime', valueGetter: (value) => value && new Date(value) },
+  ];
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>{contract.title}</Typography>
-      
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}><Card><CardContent><Typography variant="subtitle2">Party A</Typography><Typography>{contract.party_a}</Typography></CardContent></Card></Grid>
-        <Grid item xs={12} md={6}><Card><CardContent><Typography variant="subtitle2">Party B</Typography><Typography>{contract.party_b}</Typography></CardContent></Card></Grid>
-        <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">Status</Typography><Chip label={contract.status} color="primary" /></CardContent></Card></Grid>
-        <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">Type</Typography><Typography>{contract.contract_type || 'N/A'}</Typography></CardContent></Card></Grid>
-        <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">Start Date</Typography><Typography>{contract.start_date ? new Date(contract.start_date).toLocaleDateString() : 'N/A'}</Typography></CardContent></Card></Grid>
-        <Grid item xs={6} sm={3}><Card><CardContent><Typography variant="subtitle2">End Date</Typography><Typography>{contract.end_date ? new Date(contract.end_date).toLocaleDateString() : 'N/A'}</Typography></CardContent></Card></Grid>
-        <Grid item xs={12}>
-          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
-            View Highlighted Contract Text
-          </Button>
-        </Grid>
-      </Grid>
-
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Extracted Obligations</Typography>
-      <Paper sx={{ height: 500, width: '100%' }}>
-        <DataGrid
-          rows={obligations}
-          columns={obligationColumns}
-          getRowId={(row) => row.id}
-          pageSizeOptions={[5, 10, 20]}
-          density="comfortable"
-          sx={{
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: '#f5f5f5',
-              fontWeight: 'bold',
-            },
-            '& .MuiDataGrid-row:nth-of-type(odd)': {
-              backgroundColor: '#f9f9f9',
-            },
-          }}
-        />
+      <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h4" fontWeight="bold">{contract.title}</Typography>
+            <Typography variant="subtitle1" color="text.secondary">Contract ID: {contract.id}</Typography>
+          </Box>
+          <Chip label={contract.processing_status} color={getStatusChipColor(contract.processing_status)} />
+        </Box>
+        <Divider sx={{ my: 2 }} />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <Button variant="outlined">Reprocess</Button>
+            <Button variant="outlined" color="error">Delete</Button>
+        </Box>
       </Paper>
-      {contract.extracted_text && (
-        console.log("Rendering modal. isModalOpen:", isModalOpen, "extracted_text length:", contract.extracted_text.length),
-        <HighlightedContractModal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          extractedText={contract.extracted_text}
-          obligations={obligations}
-        />
-      )}
+
+      <Paper elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: 2 }}>
+        <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tab icon={<Article />} iconPosition="start" label="Details" value="details" />
+          <Tab icon={<Gavel />} iconPosition="start" label={`Obligations (${obligations.length})`} value="obligations" />
+          <Tab icon={<Notifications />} iconPosition="start" label={`Alerts (${alerts.length})`} value="alerts" />
+          <Tab icon={<TextSnippet />} iconPosition="start" label="Full Text" value="text" />
+        </Tabs>
+
+        <Box sx={{ p: activeTab.startsWith('grid') ? 0 : 3 }}>
+            {activeTab === 'details' && (
+                <Box>
+                    <Typography variant="h6" gutterBottom>Key Information</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <List dense>
+                                <DetailItem label="Party A" value={contract.party_a} />
+                                <DetailItem label="Contract Type" value={contract.contract_type} />
+                                <DetailItem label="Start Date" value={contract.start_date ? new Date(contract.start_date).toLocaleDateString() : 'N/A'} />
+                                <DetailItem label="Processing Status" value={<Chip label={contract.processing_status} color={getStatusChipColor(contract.processing_status)} size="small" />} />
+                            </List>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <List dense>
+                                <DetailItem label="Party B" value={contract.party_b} />
+                                <DetailItem label="Contract Status" value={<Chip label={contract.status} color={getStatusChipColor(contract.status)} size="small" />} />
+                                <DetailItem label="End Date" value={contract.end_date ? new Date(contract.end_date).toLocaleDateString() : 'N/A'} />
+                            </List>
+                        </Grid>
+                    </Grid>
+                </Box>
+            )}
+
+            {activeTab === 'obligations' && (
+              <Box sx={{ height: 600, width: '100%' }}>
+                <StyledDataGrid 
+                    rows={obligations} 
+                    columns={obligationColumns} 
+                    getRowId={(row) => row.id} 
+                    slots={{ toolbar: GridToolbar }}
+                    slotProps={{
+                        toolbar: {
+                          showQuickFilter: true,
+                        },
+                    }}
+                    disableRowSelectionOnClick 
+                />
+              </Box>
+            )}
+
+            {activeTab === 'alerts' && (
+                <Box sx={{ height: 500, width: '100%' }}>
+                    <StyledDataGrid rows={alerts} columns={alertColumns} getRowId={(row) => row.id} disableRowSelectionOnClick />
+                </Box>
+            )}
+        </Box>
+        {activeTab === 'text' && (
+            <Box sx={{ p: 3, maxHeight: '600px', overflowY: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'monospace', bgcolor: 'grey.50' }}>
+                {highlightedText ? <div dangerouslySetInnerHTML={{ __html: highlightedText }} /> : <Typography>No text extracted.</Typography>}
+            </Box>
+        )}
+      </Paper>
+
+      <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
+        <Box sx={{ width: 400, p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <Typography variant="h6">Obligation Condition</Typography>
+                <IconButton onClick={handleCloseDrawer}><Close /></IconButton>
+            </Box>
+            <Divider sx={{ my: 2 }} />
+            {selectedObligation ? (
+                <Box>
+                    <Typography variant="subtitle1" gutterBottom><strong>Type:</strong> {selectedObligation.obligation_type}</Typography>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
+                        {selectedObligation.condition}
+                    </Typography>
+                </Box>
+            ) : (
+                <Typography>No obligation selected.</Typography>
+            )}
+        </Box>
+      </Drawer>
+
     </Box>
   );
 };

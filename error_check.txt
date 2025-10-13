@@ -1,13 +1,53 @@
-Unexpected Application Error!
-RouterLink is not defined
-ReferenceError: RouterLink is not defined
-    at http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:32:26
-    at Array.map (<anonymous>)
-    at http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:27:30
-    at Array.map (<anonymous>)
-    at MessageList (http://localhost:5173/src/components/copilot/MessageList.tsx?t=1760273312181:6:59)
-    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:18509:20)
-    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:5654:24)
-    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:7475:21)
-    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:8525:20)
-    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=694f84fd:997:72)
+In HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  ...
+    <MuiList-root as="ul" className="MuiList-ro..." ref={null} ownerState={{dense:true, ...}}>
+      <Insertion6>
+      <ul className="MuiList-ro...">
+        <DetailItem>
+        <DetailItem>
+        <DetailItem>
+        <DetailItem label="Processing..." value={<ForwardRef(Chip2)>}>
+          <ListItem2 sx={{py:1.5,px:0}}>
+            <MuiListItem-root as="li" ref={function} ownerState={{...}} className="MuiListIte..." sx={{py:1.5,px:0}}>
+              <Insertion6>
+              <li className="MuiListIte..." ref={function}>
+                <ListItemText2 primary="Processing..." primaryTypographyProps={{...}} secondary={<ForwardRef(Chip2)>} ...>
+                  <MuiListItemText-root sx={{m:0,display:"flex", ...}} className="MuiListIte..." ref={null} ...>
+                    <Insertion6>
+                    <div className="MuiListIte...">
+                      <Typography2>
+                      <Typography2 variant="body2" color="text.primary" textAlign="left" className="MuiListIte..." ...>
+                        <MuiTypography-root as="p" ref={null} className="MuiTypogra..." ...>
+                          <Insertion6>
+>                         <p
+>                           className="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-127uf52-Mu..."
+>                           style={{}}
+>                         >
+                            <Chip2 label="completed" color="success" size="small">
+                              <MuiChip-root as="div" onClick={function onClick} onKeyDown={function onKeyDown} ...>
+                                <Insertion6>
+>                               <div
+>                                 onClick={function onClick}
+>                                 onKeyDown={function onKeyDown}
+>                                 onKeyUp={function onKeyUp}
+>                                 disabled={undefined}
+>                                 tabIndex={undefined}
+>                                 className="MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorSuccess MuiChi..."
+>                                 ref={function}
+>                               >
+
+overrideMethod @ hook.js:608
+validateDOMNesting @ react-dom_client.js?v=694f84fd:2156
+completeWork @ react-dom_client.js?v=694f84fd:9002
+runWithFiberInDEV @ react-dom_client.js?v=694f84fd:997
+completeUnitOfWork @ react-dom_client.js?v=694f84fd:12669
+performUnitOfWork @ react-dom_client.js?v=694f84fd:12575
+workLoopSync @ react-dom_client.js?v=694f84fd:12424
+renderRootSync @ react-dom_client.js?v=694f84fd:12408
+performWorkOnRoot @ react-dom_client.js?v=694f84fd:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=694f84fd:13505
+performWorkUntilDeadline @ react-dom_client.js?v=694f84fd:36
+hook.js:608 <p> cannot contain a nested <div>.
+See this log for the ancestor stack trace
