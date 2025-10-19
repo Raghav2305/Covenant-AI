@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Grid, Paper, TextField, IconButton, CircularProgress, Alert, Chip, Avatar, Divider } from '@mui/material';
+import { Box, Typography, Grid, Paper, TextField, IconButton, CircularProgress, Alert, Chip, Avatar, Divider, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { styled, keyframes } from '@mui/system';
 import { Send, SmartToy, AccountCircle, Close } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { askCopilot } from '../services/copilotService';
+import { getContracts } from '../services/contractService';
+import type { Contract } from '../services/contractService';
 
 // --- Animation ---
 const fadeIn = keyframes`
@@ -108,7 +110,13 @@ const CopilotPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [selectedContract, setSelectedContract] = useState<string>('all');
     const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        getContracts().then(setContracts);
+    }, []);
 
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -128,7 +136,8 @@ const CopilotPage: React.FC = () => {
         setError(null);
 
         try {
-            const response = await askCopilot(text);
+            const contractId = selectedContract === 'all' ? undefined : selectedContract;
+            const response = await askCopilot(text, contractId);
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 text: response.answer,
@@ -149,7 +158,22 @@ const CopilotPage: React.FC = () => {
             p: 3, 
             borderRadius: 2 
         }}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>AI Copilot</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h4" fontWeight="bold" sx={{ color: 'text.primary' }}>AI Copilot</Typography>
+                <FormControl sx={{ minWidth: 250, background: 'rgba(255,255,255,0.7)', borderRadius: 1 }} size="small">
+                    <InputLabel>Contract Context</InputLabel>
+                    <Select
+                        value={selectedContract}
+                        label="Contract Context"
+                        onChange={(e) => setSelectedContract(e.target.value)}
+                    >
+                        <MenuItem value="all">All Contracts</MenuItem>
+                        {contracts.map(contract => (
+                            <MenuItem key={contract.id} value={contract.id}>{contract.title}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Box>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={selectedSource ? 7 : 12}>
                     <GlassmorphicPaper elevation={6}>
