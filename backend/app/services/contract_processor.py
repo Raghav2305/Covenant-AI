@@ -17,7 +17,7 @@ from app.models.contract import Contract
 from app.models.obligation import Obligation
 from app.utils.llm_client import LLMClient
 from app.utils.ocr_processor import OCRProcessor
-from app.utils.simple_vector_store import SimpleVectorStore
+from app.utils.vector_store import VectorStore
 
 logger = structlog.get_logger()
 
@@ -28,7 +28,7 @@ class ContractProcessor:
     def __init__(self):
         self.llm_client = LLMClient()
         self.ocr_processor = OCRProcessor()
-        self.vector_store = SimpleVectorStore()
+        self.vector_store = VectorStore()
     
     async def process_contract(
         self, 
@@ -42,6 +42,7 @@ class ContractProcessor:
         logger.info("Starting contract processing", contract_id=str(contract_id), file_path=file_path)
         
         try:
+            await self.vector_store.setup_schema()
             # Step 1: Extract text from document
             extracted_text = await self.extract_text(file_path)
             logger.info("Text extraction completed", contract_id=str(contract_id), text_length=len(extracted_text))
@@ -332,41 +333,48 @@ Return ONLY the JSON, no additional text.
         
         return obligation
     
+    def _chunk_text(self, text: str, chunk_size: int = 1000, overlap: int = 200) -> List[str]:
+        """Splits text into overlapping chunks."""
+        if not text:
+            return []
+        
+        words = text.split()
+        chunks = []
+        for i in range(0, len(words), chunk_size - overlap):
+            chunk = " ".join(words[i:i + chunk_size])
+            chunks.append(chunk)
+        return chunks
+
     async def index_contract(self, contract: Contract, obligations: List[Obligation]):
         """Index contract and obligations in vector store for RAG"""
         try:
-            # Index contract text
-            await self.vector_store.add_document(
-                doc_id=str(contract.id),
-                content=contract.extracted_text,
-                metadata={
-                    "type": "contract",
+            # Index contract text in chunks
+            chunks = self._chunk_text(contract.extracted_text)
+            for i, chunk in enumerate(chunks):
+                doc_id = f"{str(contract.id)}_chunk_{i}"
+                metadata = {
+                    "doc_type": "contract_chunk",
+                    "contract_id": str(contract.id),
                     "title": contract.title,
-                    "party_a": contract.party_a,
-                    "party_b": contract.party_b,
-                    "contract_type": contract.contract_type
+                    "party": f"{contract.party_a}, {contract.party_b}",
                 }
-            )
-            
+                await self.vector_store.add_document(doc_id, chunk, metadata)
+
             # Index obligations
             for obligation in obligations:
-                await self.vector_store.add_document(
-                    doc_id=str(obligation.id),
-                    content=f"{obligation.description} {obligation.condition or ''}",
-                    metadata={
-                        "type": "obligation",
-                        "contract_id": str(contract.id),
-                        "obligation_id": obligation.obligation_id,
-                        "party": obligation.party,
-                        "obligation_type": obligation.obligation_type,
-                        "deadline": obligation.deadline.isoformat() if obligation.deadline else None,
-                        "risk_level": obligation.risk_level
-                    }
-                )
+                content = f"Obligation for {obligation.party}: {obligation.description}. Condition: {obligation.condition or 'N/A'}."
+                metadata = {
+                    "doc_type": "obligation",
+                    "contract_id": str(contract.id),
+                    "title": contract.title,
+                    "party": obligation.party,
+                }
+                await self.vector_store.add_document(str(obligation.id), content, metadata)
             
             logger.info("Contract indexed in vector store", 
                        contract_id=str(contract.id),
-                       obligation_count=len(obligations))
+                       obligation_count=len(obligations),
+                       chunk_count=len(chunks))
             
         except Exception as e:
             logger.error("Failed to index contract", 
@@ -382,9 +390,12 @@ Return ONLY the JSON, no additional text.
         
         logger.info("Reprocessing contract", contract_id=str(contract_id))
         
-        # Delete existing obligations
+        # Delete existing obligations from DB
         db.query(Obligation).filter(Obligation.contract_id == contract_id).delete()
         
+        # Delete from vector store
+        await self.vector_store.delete_document(str(contract_id)) # This needs to be more robust
+
         # Reprocess
         contract_data = {
             "title": contract.title,
@@ -395,4 +406,7 @@ Return ONLY the JSON, no additional text.
             "end_date": contract.end_date
         }
         
+        # Re-run processing which will re-index
+        # Note: This creates a new contract ID, which might not be ideal.
+        # A better approach would be to update the existing contract.
         return await self.process_contract(contract.file_path, contract_data, db)

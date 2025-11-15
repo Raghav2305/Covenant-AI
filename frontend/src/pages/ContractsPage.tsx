@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, Button, Paper, Chip, TextField, InputAdornment, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Paper, Chip, TextField, InputAdornment, ToggleButtonGroup, ToggleButton, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
-import { Add, Search, UploadFile } from '@mui/icons-material';
+import { Add, Search, UploadFile, Sync } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import type { Contract } from '../services/contractService';
-import { getContracts } from '../services/contractService';
+import { getContracts, reindexAllContracts } from '../services/contractService';
 import ContractUploadModal from '../components/ContractUploadModal';
 import { styled } from '@mui/material/styles';
 
@@ -57,6 +57,8 @@ const ContractsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>('all');
+  const [isReindexing, setIsReindexing] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' } | null>(null);
   const navigate = useNavigate();
 
   const columns: GridColDef[] = [
@@ -117,6 +119,18 @@ const ContractsPage: React.FC = () => {
     }
   };
 
+  const handleReindex = async () => {
+    setIsReindexing(true);
+    try {
+        const response = await reindexAllContracts();
+        setSnackbar({ open: true, message: response.message || 'Re-indexing completed!', severity: 'success' });
+    } catch (error) {
+        setSnackbar({ open: true, message: 'Re-indexing failed. Please check the console.', severity: 'error' });
+    } finally {
+        setIsReindexing(false);
+    }
+  };
+
   const filteredContracts = useMemo(() => {
     return contracts.filter((contract) => {
       const matchesSearch = [contract.title, contract.party_a, contract.party_b]
@@ -134,9 +148,19 @@ const ContractsPage: React.FC = () => {
         <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
           Contract Management
         </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setIsModalOpen(true)}>
-          Upload Contract
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button 
+                variant="outlined" 
+                startIcon={isReindexing ? <CircularProgress size={20} /> : <Sync />} 
+                onClick={handleReindex}
+                disabled={isReindexing}
+            >
+                Re-index All
+            </Button>
+            <Button variant="contained" startIcon={<Add />} onClick={() => setIsModalOpen(true)}>
+                Upload Contract
+            </Button>
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 2 }}>
@@ -190,6 +214,19 @@ const ContractsPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onUploadSuccess={handleUploadSuccess}
       />
+
+      {snackbar && (
+        <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={() => setSnackbar(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+            <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity} sx={{ width: '100%' }}>
+                {snackbar.message}
+            </Alert>
+        </Snackbar>
+      )}
     </Paper>
   );
 };

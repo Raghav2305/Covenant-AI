@@ -18,7 +18,18 @@ class LLMClient:
     def __init__(self):
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL
-    
+        self.embedding_model = "text-embedding-3-small"
+
+    async def get_embedding(self, text: str) -> List[float]:
+        """Generate embedding for a given text."""
+        try:
+            text = text.replace("\n", " ")
+            response = await self.client.embeddings.create(input=[text], model=self.embedding_model)
+            return response.data[0].embedding
+        except Exception as e:
+            logger.error("Failed to create embedding", text=text[:100], error=str(e))
+            raise
+
     async def extract_obligations(self, prompt: str) -> str:
         """Extract obligations from contract text"""
         try:

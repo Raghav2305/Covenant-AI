@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.models.contract import Contract
 from app.models.obligation import Obligation
 from app.utils.llm_client import LLMClient
-from app.utils.simple_vector_store import SimpleVectorStore
+from app.utils.vector_store import VectorStore
 import structlog
 
 logger = structlog.get_logger()
@@ -20,15 +20,13 @@ router = APIRouter()
 
 class CopilotQuery(BaseModel):
     query: str
-    context_filters: Optional[Dict[str, Any]] = None
+    contract_id: Optional[str] = None # Allow filtering by a specific contract
     max_results: Optional[int] = 10
 
 
 class CopilotResponse(BaseModel):
     answer: str
     sources: List[Dict[str, Any]]
-    confidence: float
-    query_type: str
 
 
 @router.post("/query", response_model=CopilotResponse)
@@ -36,55 +34,41 @@ async def query_copilot(
     query_data: CopilotQuery,
     db: Session = Depends(get_db)
 ):
-    """Query the AI copilot with natural language"""
+    """Query the AI copilot with natural language, with optional contract-specific context."""
     
-    logger.info("Copilot query received", query=query_data.query[:100])
+    logger.info("Copilot query received", query=query_data.query, contract_id=query_data.contract_id)
     
     try:
-        # Initialize services
         llm_client = LLMClient()
-        vector_store = SimpleVectorStore()
-        await vector_store.initialize()
-        
-        # Determine query type and extract filters
-        query_type, extracted_filters = _classify_query_type(query_data.query)
+        vector_store = VectorStore()
 
-        # Merge user-provided context_filters with extracted filters
-        effective_filters = query_data.context_filters if query_data.context_filters else {}
-        effective_filters.update(extracted_filters)
+        # If a contract_id is provided, use it to filter the search
+        filters = None
+        if query_data.contract_id:
+            filters = {"contract_id": query_data.contract_id}
 
-        # Search for relevant documents
+        # Search for relevant document chunks semantically
         search_results = await vector_store.search_documents(
             query=query_data.query,
             limit=query_data.max_results or 10,
-            filters=effective_filters
+            filters=filters
         )
         
-        # Generate response using LLM
+        # Generate response using LLM with the retrieved context
         answer = await llm_client.generate_copilot_response(
             query_data.query,
             search_results
         )
         
-        # Calculate confidence based on search results
-        confidence = _calculate_confidence(search_results)
-        
-        logger.info("Copilot query completed", 
-                   query_type=query_type,
-                   confidence=confidence,
-                   sources_count=len(search_results),
-                   effective_filters=effective_filters,
-                   search_results_preview=[{'id': r.get('id'), 'metadata': r.get('metadata'), 'similarity': r.get('similarity')} for r in search_results[:3]]) # Log effective filters
+        logger.info("Copilot query completed", contract_id=query_data.contract_id, sources_count=len(search_results))
         
         return CopilotResponse(
             answer=answer,
             sources=search_results,
-            confidence=confidence,
-            query_type=query_type
         )
         
     except Exception as e:
-        logger.error("Copilot query failed", error=str(e))
+        logger.error("Copilot query failed", error=str(e), exc_info=True)
         raise HTTPException(status_code=500, detail=f"Copilot query failed: {str(e)}")
 
 
@@ -122,6 +106,8 @@ async def get_query_suggestions(
         "context": context
     }
 
+# The other endpoints below are more for structured data retrieval and don't use the RAG system.
+# They can be kept as they are for now.
 
 @router.get("/obligations/due")
 async def get_obligations_due(
@@ -282,15 +268,12 @@ async def search_contracts_and_obligations(
     """Search contracts and obligations using vector similarity"""
     
     try:
-        vector_store = SimpleVectorStore()
-        await vector_store.initialize()
+        vector_store = VectorStore()
         
         # Determine search filters
         filters = None
-        if type == "contract":
-            filters = {"doc_type": "contract"}
-        elif type == "obligation":
-            filters = {"doc_type": "obligation"}
+        if type:
+            filters = {"doc_type": type}
         
         # Perform vector search
         results = await vector_store.search_documents(
@@ -309,44 +292,3 @@ async def search_contracts_and_obligations(
     except Exception as e:
         logger.error("Search failed", query=q, error=str(e))
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
-
-
-def _classify_query_type(query: str) -> tuple[str, dict[str, Any]]:
-    """Classify the type of query and extract relevant filters"""
-    query_lower = query.lower()
-    extracted_filters = {}
-
-    if any(word in query_lower for word in ["due", "deadline", "when", "next"]):
-        # More sophisticated date parsing would go here
-        return "deadline_query", extracted_filters
-    elif any(word in query_lower for word in ["risk", "high", "critical", "danger"]):
-        if "high" in query_lower or "critical" in query_lower:
-            extracted_filters["risk_level"] = ["high", "critical"]
-        elif "medium" in query_lower:
-            extracted_filters["risk_level"] = ["medium"]
-        elif "low" in query_lower:
-            extracted_filters["risk_level"] = ["low"]
-        return "risk_query", extracted_filters
-    elif any(word in query_lower for word in ["penalty", "rebate", "money", "amount"]):
-        return "financial_query", extracted_filters
-    elif any(word in query_lower for word in ["overdue", "late", "missed"]):
-        return "compliance_query", extracted_filters
-    elif any(word in query_lower for word in ["party", "client", "vendor"]):
-        return "party_query", extracted_filters
-    else:
-        return "general_query", extracted_filters
-
-
-def _calculate_confidence(search_results: List[Dict[str, Any]]) -> float:
-    """Calculate confidence score based on search results"""
-    if not search_results:
-        return 0.0
-    
-    # Average similarity score
-    similarities = [result.get("similarity", 0) for result in search_results]
-    avg_similarity = sum(similarities) / len(similarities)
-    
-    # Convert to percentage
-    confidence = min(avg_similarity * 100, 100)
-    
-    return round(confidence, 2)

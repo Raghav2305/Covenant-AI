@@ -12,8 +12,8 @@ import sys
 from structlog.stdlib import ProcessorFormatter, LoggerFactory
 
 from app.core.config import settings
-from app.core.simple_database import init_db
-from app.api import contracts, obligations, monitoring, reports, copilot
+from app.core.database import init_db
+from app.api import contracts, obligations, monitoring, reports, copilot, admin
 from app.core.mcp_client import MCPClientManager
 
 # Configure structured logging
@@ -135,6 +135,7 @@ app.include_router(obligations.router, prefix="/api/v1/obligations", tags=["obli
 app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["monitoring"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["reports"])
 app.include_router(copilot.router, prefix="/api/v1/copilot", tags=["copilot"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
 
 if __name__ == "__main__":

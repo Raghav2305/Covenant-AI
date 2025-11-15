@@ -51,3 +51,13 @@ export const getContractById = async (id: string): Promise<any> => {
     throw error;
   }
 };
+
+export const reindexAllContracts = async (): Promise<any> => {
+    try {
+        const response = await axios.post(`${API_URL}/admin/reindex-all`);
+        return response.data;
+    } catch (error) {
+        console.error("Error re-indexing contracts:", error);
+        throw error;
+    }
+};

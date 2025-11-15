@@ -1,53 +1,63 @@
-In HTML, <div> cannot be a descendant of <p>.
-This will cause a hydration error.
+# Database Configuration
+DATABASE_URL=postgresql://postgres:admin@localhost:5432/contract_ai
+REDIS_URL=redis://localhost:6379
 
-  ...
-    <MuiList-root as="ul" className="MuiList-ro..." ref={null} ownerState={{dense:true, ...}}>
-      <Insertion6>
-      <ul className="MuiList-ro...">
-        <DetailItem>
-        <DetailItem>
-        <DetailItem>
-        <DetailItem label="Processing..." value={<ForwardRef(Chip2)>}>
-          <ListItem2 sx={{py:1.5,px:0}}>
-            <MuiListItem-root as="li" ref={function} ownerState={{...}} className="MuiListIte..." sx={{py:1.5,px:0}}>
-              <Insertion6>
-              <li className="MuiListIte..." ref={function}>
-                <ListItemText2 primary="Processing..." primaryTypographyProps={{...}} secondary={<ForwardRef(Chip2)>} ...>
-                  <MuiListItemText-root sx={{m:0,display:"flex", ...}} className="MuiListIte..." ref={null} ...>
-                    <Insertion6>
-                    <div className="MuiListIte...">
-                      <Typography2>
-                      <Typography2 variant="body2" color="text.primary" textAlign="left" className="MuiListIte..." ...>
-                        <MuiTypography-root as="p" ref={null} className="MuiTypogra..." ...>
-                          <Insertion6>
->                         <p
->                           className="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary css-127uf52-Mu..."
->                           style={{}}
->                         >
-                            <Chip2 label="completed" color="success" size="small">
-                              <MuiChip-root as="div" onClick={function onClick} onKeyDown={function onKeyDown} ...>
-                                <Insertion6>
->                               <div
->                                 onClick={function onClick}
->                                 onKeyDown={function onKeyDown}
->                                 onKeyUp={function onKeyUp}
->                                 disabled={undefined}
->                                 tabIndex={undefined}
->                                 className="MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorSuccess MuiChi..."
->                                 ref={function}
->                               >
+# AI Services
+OPENAI_API_KEY=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
+OPENAI_MODEL=gpt-4
+VECTOR_DB_URL=http://localhost:8080
+VECTOR_DB_API_KEY=your_vector_db_api_key
 
-overrideMethod @ hook.js:608
-validateDOMNesting @ react-dom_client.js?v=694f84fd:2156
-completeWork @ react-dom_client.js?v=694f84fd:9002
-runWithFiberInDEV @ react-dom_client.js?v=694f84fd:997
-completeUnitOfWork @ react-dom_client.js?v=694f84fd:12669
-performUnitOfWork @ react-dom_client.js?v=694f84fd:12575
-workLoopSync @ react-dom_client.js?v=694f84fd:12424
-renderRootSync @ react-dom_client.js?v=694f84fd:12408
-performWorkOnRoot @ react-dom_client.js?v=694f84fd:11766
-performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=694f84fd:13505
-performWorkUntilDeadline @ react-dom_client.js?v=694f84fd:36
-hook.js:608 <p> cannot contain a nested <div>.
-See this log for the ancestor stack trace
+# MCP Configuration (Model Context Protocol)
+MCP_SERVER_URL=http://localhost:3001
+MCP_SERVER_PORT=3001
+MCP_CLIENT_ID=contract_ai_copilot
+MCP_DATABASE_CONNECTOR_URL=http://localhost:3001
+MCP_CRM_CONNECTOR_URL=http://localhost:3003
+MCP_FINANCE_CONNECTOR_URL=http://localhost:3004
+
+# External System Connections (via MCP)
+TRANSACTION_DB_URL=postgresql://user:pass@transaction-db:5432/transactions
+CRM_API_URL=https://api.crm-system.com/v1
+FINANCE_API_URL=https://api.finance-system.com/v1
+
+# Security
+SECRET_KEY=your_secret_key_here_minimum_32_characters
+JWT_SECRET=your_jwt_secret_here_minimum_32_characters
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=1440
+
+# Notification Services
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+EMAIL_SERVICE_API_KEY=your_email_service_api_key
+TEAMS_WEBHOOK_URL=https://your-teams-webhook-url
+
+# File Storage
+UPLOAD_DIR=./data/uploads
+MAX_FILE_SIZE_MB=50
+ALLOWED_FILE_TYPES=pdf,docx,txt
+
+# Monitoring & Logging
+LOG_LEVEL=INFO
+LOG_FILE=./logs/app.log
+SENTRY_DSN=your_sentry_dsn_for_error_tracking
+
+# Development Settings
+DEBUG=True
+ENVIRONMENT=development
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:5173
+
+# Production Settings (uncomment for production)
+# DEBUG=False
+# ENVIRONMENT=production
+# CORS_ORIGINS=https://yourdomain.com
+
+# Performance Settings
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+MAX_WORKERS=4
+
+# Backup & Recovery
+BACKUP_SCHEDULE=daily
+BACKUP_RETENTION_DAYS=30
+BACKUP_STORAGE_URL=s3://your-backup-bucket
