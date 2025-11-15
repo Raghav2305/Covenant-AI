@@ -1,6 +1,10 @@
 {
   "dependencies": {
     "@mui/x-data-grid": "^8.13.1",
-    "axios": "^1.12.2"
+    "axios": "^1.12.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^11.0.0"
   }
 }
