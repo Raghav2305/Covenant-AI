@@ -64,6 +64,17 @@ services:
       postgres:
         condition: service_healthy
 
+  # MCP Evaluation Server (Development)
+  mcp-eval-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.mcp_eval.main:app --host 0.0.0.0 --port 3002 --reload
+
   # Backend API (Development)
   backend:
     build:
@@ -76,6 +87,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - WEAVIATE_URL=http://weaviate:8080
       - MCP_SERVER_URL=http://mcp-database-server:3001
+      - MCP_EVAL_SERVER_URL=http://mcp-eval-server:3002
     volumes:
       - ./backend:/app
       - ./data:/app/data

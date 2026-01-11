@@ -24,6 +24,8 @@ class Contract(Base):
     status = Column(String(50), default="active")
     file_path = Column(Text)
     extracted_text = Column(Text)
+    linked_entity_id = Column(String(255), nullable=True)
+    linked_entity_type = Column(String(100), nullable=True)
     processing_status = Column(String(50), default="pending")
     processing_error = Column(Text)
     
@@ -52,6 +54,8 @@ class Contract(Base):
             "file_path": self.file_path,
             "processing_status": self.processing_status,
             "processing_error": self.processing_error,
+            "linked_entity_id": self.linked_entity_id,
+            "linked_entity_type": self.linked_entity_type,
             "extracted_text": self.extracted_text, # Ensure extracted_text is always included
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

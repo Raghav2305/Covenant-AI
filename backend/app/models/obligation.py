@@ -44,6 +44,8 @@ class Obligation(Base):
     # Compliance tracking
     compliance_status = Column(String(50), default="unknown")  # compliant, non_compliant, unknown
     compliance_evidence = Column(Text)  # Evidence of compliance/non-compliance (JSON as text)
+    check_type = Column(String(100), nullable=True)
+    check_parameters = Column(JSONB, nullable=True)
     breach_count = Column(Integer, default=0)
     last_breach_date = Column(DateTime)
     
@@ -81,6 +83,8 @@ class Obligation(Base):
             "next_check": self.next_check.isoformat() if self.next_check else None,
             "compliance_status": self.compliance_status,
             "compliance_evidence": self.compliance_evidence,
+            "check_type": self.check_type,
+            "check_parameters": self.check_parameters,
             "breach_count": self.breach_count,
             "last_breach_date": self.last_breach_date.isoformat() if self.last_breach_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,

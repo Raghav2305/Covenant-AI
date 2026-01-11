@@ -159,26 +159,26 @@ class MonitoringEngine:
         }
         
         try:
-            # Extract customer/party identifier from obligation
-            customer_id = self._extract_customer_id(obligation)
+            # Use contract_id directly for fetching data
+            contract_id = str(obligation.contract_id)
             
-            if not customer_id:
-                logger.warning("Could not extract customer ID", 
+            if not contract_id:
+                logger.warning("Obligation has no contract_id", 
                               obligation_id=str(obligation.id))
                 return live_data
             
             # Get data based on obligation type
             if "discount" in obligation.obligation_type.lower():
-                live_data.update(await self._get_discount_data(customer_id))
+                live_data.update(await self._get_discount_data(contract_id))
             elif "rebate" in obligation.obligation_type.lower():
-                live_data.update(await self._get_rebate_data(customer_id))
+                live_data.update(await self._get_rebate_data(contract_id))
             elif "volume" in obligation.obligation_type.lower():
-                live_data.update(await self._get_volume_data(customer_id))
+                live_data.update(await self._get_volume_data(contract_id))
             elif "transaction" in obligation.obligation_type.lower():
-                live_data.update(await self._get_transaction_data(customer_id))
+                live_data.update(await self._get_transaction_data(contract_id))
             else:
                 # General compliance data
-                live_data.update(await self._get_general_compliance_data(customer_id))
+                live_data.update(await self._get_general_compliance_data(contract_id))
             
         except Exception as e:
             logger.error("Failed to get live data", 
@@ -188,30 +188,7 @@ class MonitoringEngine:
         
         return live_data
     
-    def _extract_customer_id(self, obligation: Obligation) -> Optional[str]:
-        """Extract customer ID from obligation data"""
-        # This is a simplified extraction - in reality, you'd have more sophisticated logic
-        party = obligation.party.lower()
-        
-        # Look for common customer ID patterns
-        if "cust" in party or "client" in party:
-            # Extract ID from party name
-            import re
-            match = re.search(r'(cust|client)[-_]?(\d+)', party)
-            if match:
-                return f"CUST-{match.group(2)}"
-        
-        # Default mapping for demo
-        party_mapping = {
-            "client a": "CUST-001",
-            "client b": "CUST-002", 
-            "vendor x": "VEND-001",
-            "partner y": "PART-001"
-        }
-        
-        return party_mapping.get(party, "CUST-001")  # Default for demo
-    
-    async def _get_discount_data(self, customer_id: str) -> Dict[str, Any]:
+    async def _get_discount_data(self, contract_id: str) -> Dict[str, Any]:
         """Get discount data for cap monitoring"""
         try:
             date_range = {
@@ -219,22 +196,22 @@ class MonitoringEngine:
                 "end": datetime.now().strftime("%Y-%m-%d")
             }
             
-            discount_data = await self.mcp_manager.get_discount_data(customer_id, date_range)
+            discount_data = await self.mcp_manager.get_discount_data(contract_id, date_range)
             return {
                 "discount_data": discount_data,
                 "max_discount_percentage": discount_data.get("summary", {}).get("max_discount_percentage", 0),
                 "discount_cap_breach": discount_data.get("summary", {}).get("cap_breach", False)
             }
         except Exception as e:
-            logger.error("Failed to get discount data", customer_id=customer_id, error=str(e))
+            logger.error("Failed to get discount data", contract_id=contract_id, error=str(e))
             return {"discount_data": {}, "error": str(e)}
     
-    async def _get_rebate_data(self, customer_id: str) -> Dict[str, Any]:
+    async def _get_rebate_data(self, contract_id: str) -> Dict[str, Any]:
         """Get rebate data for volume-based triggers"""
         try:
             period_start = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
             
-            volume_data = await self.mcp_manager.get_customer_volume(customer_id, period_start)
+            volume_data = await self.mcp_manager.get_customer_volume(contract_id, period_start)
             return {
                 "volume_data": volume_data,
                 "transaction_count": volume_data.get("transaction_count", 0),
@@ -242,25 +219,25 @@ class MonitoringEngine:
                 "rebate_eligible": volume_data.get("rebate_eligible", False)
             }
         except Exception as e:
-            logger.error("Failed to get rebate data", customer_id=customer_id, error=str(e))
+            logger.error("Failed to get rebate data", contract_id=contract_id, error=str(e))
             return {"volume_data": {}, "error": str(e)}
     
-    async def _get_volume_data(self, customer_id: str) -> Dict[str, Any]:
+    async def _get_volume_data(self, contract_id: str) -> Dict[str, Any]:
         """Get transaction volume data"""
         try:
             period_start = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
             
-            volume_data = await self.mcp_manager.get_customer_volume(customer_id, period_start)
+            volume_data = await self.mcp_manager.get_customer_volume(contract_id, period_start)
             return {
                 "volume_data": volume_data,
                 "current_volume": volume_data.get("total_amount", 0),
                 "transaction_count": volume_data.get("transaction_count", 0)
             }
         except Exception as e:
-            logger.error("Failed to get volume data", customer_id=customer_id, error=str(e))
+            logger.error("Failed to get volume data", contract_id=contract_id, error=str(e))
             return {"volume_data": {}, "error": str(e)}
     
-    async def _get_transaction_data(self, customer_id: str) -> Dict[str, Any]:
+    async def _get_transaction_data(self, contract_id: str) -> Dict[str, Any]:
         """Get transaction data for compliance checking"""
         try:
             date_range = {
@@ -268,16 +245,16 @@ class MonitoringEngine:
                 "end": datetime.now().strftime("%Y-%m-%d")
             }
             
-            transaction_data = await self.mcp_manager.get_live_transaction_data(customer_id, date_range)
+            transaction_data = await self.mcp_manager.get_live_transaction_data(contract_id, date_range)
             return {
                 "transaction_data": transaction_data,
                 "recent_transactions": transaction_data.get("rows", [])
             }
         except Exception as e:
-            logger.error("Failed to get transaction data", customer_id=customer_id, error=str(e))
+            logger.error("Failed to get transaction data", contract_id=contract_id, error=str(e))
             return {"transaction_data": {}, "error": str(e)}
     
-    async def _get_general_compliance_data(self, customer_id: str) -> Dict[str, Any]:
+    async def _get_general_compliance_data(self, contract_id: str) -> Dict[str, Any]:
         """Get general compliance data"""
         try:
             # Get recent transaction data as general compliance indicator
@@ -286,7 +263,7 @@ class MonitoringEngine:
                 "end": datetime.now().strftime("%Y-%m-%d")
             }
             
-            transaction_data = await self.mcp_manager.get_live_transaction_data(customer_id, date_range)
+            transaction_data = await self.mcp_manager.get_live_transaction_data(contract_id, date_range)
             return {
                 "compliance_data": transaction_data,
                 "activity_summary": {
@@ -295,7 +272,7 @@ class MonitoringEngine:
                 }
             }
         except Exception as e:
-            logger.error("Failed to get general compliance data", customer_id=customer_id, error=str(e))
+            logger.error("Failed to get general compliance data", contract_id=contract_id, error=str(e))
             return {"compliance_data": {}, "error": str(e)}
     
     def _should_generate_alert(

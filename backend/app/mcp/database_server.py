@@ -11,8 +11,18 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import structlog
 from app.core.config import settings
+import sqlite3
+import os
 
 logger = structlog.get_logger()
+
+# Define the path for the SQLite database
+DB_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "live_data.db")
+
+async def get_db_connection():
+    """Get a new SQLite database connection."""
+    # Use a thread pool or run in executor for synchronous sqlite3 operations
+    return await asyncio.to_thread(sqlite3.connect, DB_FILE)
 
 # Create FastAPI app for MCP server
 app = FastAPI(title="MCP Database Server")
@@ -122,124 +132,192 @@ async def disconnect_client(request: Dict[str, str]):
 
 
 async def execute_database_query(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Execute raw database query"""
+    """Execute raw database query against SQLite."""
     query = params.get("query", "")
     query_params = params.get("params", {})
-    
-    # In a real implementation, this would connect to the actual database
-    # For now, return mock data based on query patterns
-    
-    if "transactions" in query.lower():
-        return {
-            "rows": [
-                {
-                    "transaction_id": "TXN-001",
-                    "amount": 150000.00,
-                    "transaction_date": "2024-09-27",
-                    "customer_id": query_params.get("customer_id", "CUST-001"),
-                    "transaction_type": "payment"
-                },
-                {
-                    "transaction_id": "TXN-002", 
-                    "amount": 75000.00,
-                    "transaction_date": "2024-09-26",
-                    "customer_id": query_params.get("customer_id", "CUST-001"),
-                    "transaction_type": "refund"
-                }
-            ],
-            "count": 2
-        }
-    
-    return {"rows": [], "count": 0}
+
+    conn = None
+    try:
+        conn = await get_db_connection()
+        conn.row_factory = sqlite3.Row # This allows accessing columns by name
+        cursor = conn.cursor()
+
+        # Replace named parameters with positional ones for sqlite3
+        # And extract values in order
+        ordered_params = []
+        formatted_query = query
+        for key, value in query_params.items():
+            # Simple replacement for :param_name, might need more robust regex for complex cases
+            if f":{key}" in formatted_query:
+                formatted_query = formatted_query.replace(f":{key}", "?")
+                ordered_params.append(value)
+            elif f"${key}" in formatted_query: # Handle $param_name for some SQL dialects
+                formatted_query = formatted_query.replace(f"${key}", "?")
+                ordered_params.append(value)
+
+        await asyncio.to_thread(cursor.execute, formatted_query, ordered_params)
+        rows = await asyncio.to_thread(cursor.fetchall)
+
+        results = []
+        for row in rows:
+            results.append(dict(row)) # Convert sqlite3.Row to dict
+
+        return {"rows": results, "count": len(results)}
+    except Exception as e:
+        logger.error("SQLite query execution failed", query=query, params=query_params, error=str(e))
+        raise
+    finally:
+        if conn:
+            await asyncio.to_thread(conn.close)
 
 
 async def get_transaction_data(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Get transaction data for obligation monitoring"""
-    customer_id = params.get("customer_id")
+    """Get transaction data for obligation monitoring from SQLite."""
+    contract_id = params.get("contract_id")
     start_date = params.get("start_date")
     end_date = params.get("end_date")
-    
-    # Mock transaction data
-    return {
-        "customer_id": customer_id,
-        "period": {"start": start_date, "end": end_date},
-        "transactions": [
-            {
-                "transaction_id": "TXN-001",
-                "amount": 150000.00,
-                "transaction_date": "2024-09-27",
-                "transaction_type": "payment",
-                "discount_percentage": 5.0,
-                "discount_amount": 7500.00
-            },
-            {
-                "transaction_id": "TXN-002",
-                "amount": 75000.00, 
-                "transaction_date": "2024-09-26",
-                "transaction_type": "refund",
-                "discount_percentage": 0.0,
-                "discount_amount": 0.00
+
+    conn = None
+    try:
+        conn = await get_db_connection()
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        query = """
+        SELECT transaction_id, amount, transaction_date, transaction_type,
+               discount_percentage, discount_amount, customer_id
+        FROM transactions
+        WHERE contract_id = ? AND transaction_date BETWEEN ? AND ?
+        ORDER BY transaction_date DESC
+        """
+        await asyncio.to_thread(cursor.execute, query, (contract_id, start_date, end_date))
+        rows = await asyncio.to_thread(cursor.fetchall)
+
+        transactions = [dict(row) for row in rows]
+
+        total_amount = sum(t['amount'] for t in transactions)
+        total_discount = sum(t['discount_amount'] for t in transactions)
+        transaction_count = len(transactions)
+        avg_discount_percentage = (sum(t['discount_percentage'] for t in transactions) / transaction_count) if transaction_count > 0 else 0
+
+        return {
+            "contract_id": contract_id,
+            "period": {"start": start_date, "end": end_date},
+            "transactions": transactions,
+            "summary": {
+                "total_amount": total_amount,
+                "total_discount": total_discount,
+                "transaction_count": transaction_count,
+                "avg_discount_percentage": avg_discount_percentage
             }
-        ],
-        "summary": {
-            "total_amount": 225000.00,
-            "total_discount": 7500.00,
-            "transaction_count": 2,
-            "avg_discount_percentage": 2.5
         }
-    }
+    except Exception as e:
+        logger.error("Failed to get transaction data from SQLite", contract_id=contract_id, error=str(e))
+        raise
+    finally:
+        if conn:
+            await asyncio.to_thread(conn.close)
 
 
 async def get_customer_volume(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Get customer transaction volume for rebate calculations"""
-    customer_id = params.get("customer_id")
+    """Get customer transaction volume for rebate calculations from SQLite."""
+    contract_id = params.get("contract_id")
     period_start = params.get("period_start")
-    
-    # Mock volume data
-    return {
-        "customer_id": customer_id,
-        "period_start": period_start,
-        "transaction_count": 1250,
-        "total_amount": 2500000.00,
-        "volume_threshold": 1000000.00,
-        "rebate_eligible": True,
-        "rebate_percentage": 2.0,
-        "estimated_rebate": 50000.00
-    }
+
+    conn = None
+    try:
+        conn = await get_db_connection()
+        cursor = conn.cursor()
+
+        query = """
+        SELECT COUNT(*) as transaction_count, SUM(amount) as total_amount
+        FROM transactions
+        WHERE contract_id = ? AND transaction_date >= ?
+        """
+        await asyncio.to_thread(cursor.execute, query, (contract_id, period_start))
+        result = await asyncio.to_thread(cursor.fetchone)
+
+        transaction_count = result[0] if result[0] is not None else 0
+        total_amount = result[1] if result[1] is not None else 0.0
+
+        # Define a simple volume threshold for demo purposes
+        volume_threshold = 1000000.00 # Example: 1 Million
+        rebate_percentage = 2.0 # Example: 2% rebate
+
+        rebate_eligible = total_amount >= volume_threshold
+        estimated_rebate = (total_amount * rebate_percentage / 100) if rebate_eligible else 0.0
+
+        return {
+            "contract_id": contract_id,
+            "period_start": period_start,
+            "transaction_count": transaction_count,
+            "total_amount": total_amount,
+            "volume_threshold": volume_threshold,
+            "rebate_eligible": rebate_eligible,
+            "rebate_percentage": rebate_percentage,
+            "estimated_rebate": estimated_rebate
+        }
+    except Exception as e:
+        logger.error("Failed to get customer volume from SQLite", contract_id=contract_id, error=str(e))
+        raise
+    finally:
+        if conn:
+            await asyncio.to_thread(conn.close)
 
 
 async def get_discount_data(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Get discount data for cap monitoring"""
-    customer_id = params.get("customer_id")
+    """Get discount data for cap monitoring from SQLite."""
+    contract_id = params.get("contract_id")
     start_date = params.get("start_date")
     end_date = params.get("end_date")
-    
-    # Mock discount data
-    return {
-        "customer_id": customer_id,
-        "period": {"start": start_date, "end": end_date},
-        "discounts": [
-            {
-                "transaction_id": "TXN-001",
-                "discount_percentage": 5.0,
-                "discount_amount": 7500.00,
-                "transaction_date": "2024-09-27"
-            },
-            {
-                "transaction_id": "TXN-003",
-                "discount_percentage": 8.0,
-                "discount_amount": 12000.00,
-                "transaction_date": "2024-09-25"
+
+    conn = None
+    try:
+        conn = await get_db_connection()
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        query = """
+        SELECT transaction_id, discount_percentage, discount_amount, transaction_date, customer_id
+        FROM transactions
+        WHERE contract_id = ? AND discount_percentage > 0 AND transaction_date BETWEEN ? AND ?
+        ORDER BY transaction_date DESC
+        """
+        await asyncio.to_thread(cursor.execute, query, (contract_id, start_date, end_date))
+        rows = await asyncio.to_thread(cursor.fetchall)
+
+        discounts = [dict(row) for row in rows]
+
+        max_discount_percentage = 0.0
+        avg_discount_percentage = 0.0
+        total_discount_amount = 0.0
+        discount_cap = 10.0 # Example: 10% discount cap
+
+        if discounts:
+            max_discount_percentage = max(d['discount_percentage'] for d in discounts)
+            avg_discount_percentage = sum(d['discount_percentage'] for d in discounts) / len(discounts)
+            total_discount_amount = sum(d['discount_amount'] for d in discounts)
+
+        cap_breach = max_discount_percentage > discount_cap
+
+        return {
+            "contract_id": contract_id,
+            "period": {"start": start_date, "end": end_date},
+            "discounts": discounts,
+            "summary": {
+                "max_discount_percentage": max_discount_percentage,
+                "avg_discount_percentage": avg_discount_percentage,
+                "total_discount_amount": total_discount_amount,
+                "discount_cap": discount_cap,
+                "cap_breach": cap_breach
             }
-        ],
-        "summary": {
-            "max_discount_percentage": 8.0,
-            "avg_discount_percentage": 6.5,
-            "total_discount_amount": 19500.00,
-            "discount_cap": 10.0,
-            "cap_breach": False
         }
-    }
+    except Exception as e:
+        logger.error("Failed to get discount data from SQLite", contract_id=contract_id, error=str(e))
+        raise
+    finally:
+        if conn:
+            await asyncio.to_thread(conn.close)
 
 
 if __name__ == "__main__":

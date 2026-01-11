@@ -155,50 +155,50 @@ class MCPClientManager:
         
         return await self.clients["finance"].query(query_type, params or {})
     
-    async def get_live_transaction_data(self, customer_id: str, date_range: Dict[str, str]) -> Dict[str, Any]:
+    async def get_live_transaction_data(self, contract_id: str, date_range: Dict[str, str]) -> Dict[str, Any]:
         """Get live transaction data for obligation monitoring"""
         return await self.query_database(
             """
             SELECT transaction_id, amount, transaction_date, customer_id, transaction_type
             FROM transactions 
-            WHERE customer_id = :customer_id 
+            WHERE contract_id = :contract_id 
             AND transaction_date BETWEEN :start_date AND :end_date
             ORDER BY transaction_date DESC
             """,
             {
-                "customer_id": customer_id,
+                "contract_id": contract_id,
                 "start_date": date_range["start"],
                 "end_date": date_range["end"]
             }
         )
     
-    async def get_customer_volume(self, customer_id: str, period: str) -> Dict[str, Any]:
+    async def get_customer_volume(self, contract_id: str, period: str) -> Dict[str, Any]:
         """Get customer transaction volume for rebate calculations"""
         return await self.query_database(
             """
             SELECT COUNT(*) as transaction_count, SUM(amount) as total_amount
             FROM transactions 
-            WHERE customer_id = :customer_id 
+            WHERE contract_id = :contract_id 
             AND transaction_date >= :period_start
             """,
             {
-                "customer_id": customer_id,
+                "contract_id": contract_id,
                 "period_start": period
             }
         )
     
-    async def get_discount_data(self, customer_id: str, date_range: Dict[str, str]) -> Dict[str, Any]:
+    async def get_discount_data(self, contract_id: str, date_range: Dict[str, str]) -> Dict[str, Any]:
         """Get discount data for cap monitoring"""
         return await self.query_database(
             """
             SELECT discount_percentage, discount_amount, transaction_date
             FROM transactions 
-            WHERE customer_id = :customer_id 
+            WHERE contract_id = :contract_id 
             AND discount_percentage > 0
             AND transaction_date BETWEEN :start_date AND :end_date
             """,
             {
-                "customer_id": customer_id,
+                "contract_id": contract_id,
                 "start_date": date_range["start"],
                 "end_date": date_range["end"]
             }
